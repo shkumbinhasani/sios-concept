@@ -1,0 +1,829 @@
+.ix {
+  --win-bg: #0d0d13;
+  --ix-text: #f2f2f7;
+  --ix-dim: rgba(242, 242, 247, 0.55);
+  --ix-mine: #0a84ff;
+  --ix-theirs: #2c2c32;
+}
+
+.ix-stage {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  color: var(--ix-text);
+}
+
+.ix-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--win-bg);
+}
+
+.ix-scroll {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 72px 28px 150px 104px;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, transparent 30px, #000 72px, #000 calc(100% - 150px), transparent calc(100% - 92px));
+}
+
+.ix-scroll > * {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.ix-day {
+  margin: 18px auto 10px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ix-dim);
+}
+
+.ix-catchup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 4px auto 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(139, 123, 255, 0.22), rgba(255, 122, 176, 0.14)),
+    var(--glass);
+  animation: ix-in 0.4s cubic-bezier(0.2, 0.9, 0.25, 1.1);
+}
+
+.ix-catchup-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #8b7bff, #ff7ab0);
+  color: #fff;
+}
+
+.ix-catchup-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.ix-catchup-text b {
+  font-size: 12px;
+  color: #d9d2ff;
+}
+
+.ix-catchup-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ix-dim);
+}
+
+.ix-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 2px;
+  animation: ix-in 0.32s cubic-bezier(0.2, 0.9, 0.25, 1.1);
+}
+
+.ix-msg.is-mine {
+  align-items: flex-end;
+}
+
+.ix-msg.is-first {
+  margin-top: 10px;
+}
+
+.ix-author {
+  margin: 0 0 3px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.ix-bubble-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(76%, 540px);
+}
+
+.is-mine .ix-bubble-row {
+  flex-direction: row-reverse;
+}
+
+.ix-bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: var(--ix-theirs);
+  font-size: 14.5px;
+  line-height: 1.4;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.is-mine .ix-bubble {
+  background: var(--ix-mine);
+  color: #fff;
+}
+
+.ix-msg:not(.is-mine):not(.is-last) .ix-bubble {
+  border-bottom-left-radius: 8px;
+}
+
+.ix-msg:not(.is-mine):not(.is-first) .ix-bubble {
+  border-top-left-radius: 8px;
+}
+
+.ix-msg.is-mine:not(.is-last) .ix-bubble {
+  border-bottom-right-radius: 8px;
+}
+
+.ix-msg.is-mine:not(.is-first) .ix-bubble {
+  border-top-right-radius: 8px;
+}
+
+.ix-msg:not(.is-mine).is-last .ix-bubble {
+  border-bottom-left-radius: 6px;
+}
+
+.ix-msg.is-mine.is-last .ix-bubble {
+  border-bottom-right-radius: 6px;
+}
+
+.ix-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ix-quote {
+  display: flex;
+  flex-direction: column;
+  margin: 0 -6px 6px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 12.5px;
+}
+
+.ix-quote b {
+  font-weight: 600;
+}
+
+.ix-quote span {
+  overflow: hidden;
+  opacity: 0.75;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ix-image {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: -4px -10px 6px;
+  border-radius: 16px;
+}
+
+.ix-voice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 250px;
+  max-width: 100%;
+  padding: 2px 0;
+}
+
+.ix-voice-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.ix-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  height: 24px;
+}
+
+.ix-wave i {
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.ix-wave i.is-played {
+  background: #fff;
+}
+
+.ix-voice-time {
+  flex: none;
+  font-size: 11.5px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.ix-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  max-width: 100%;
+  margin: 8px -6px 0;
+  padding: 4px 12px 4px 4px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-size: 12px;
+}
+
+.ix-chip:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ix-chip-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ix-chip-activity {
+  overflow: hidden;
+  color: var(--ix-dim);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ix-reaction {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3a3a42;
+  box-shadow: 0 0 0 2px var(--win-bg);
+  font-size: 12px;
+  animation: ix-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.is-mine .ix-reaction {
+  right: auto;
+  left: -8px;
+}
+
+.ix-msg:has(.ix-reaction) {
+  margin-top: 14px;
+}
+
+.ix-read {
+  margin: 4px 6px 0;
+  font-size: 11px;
+  color: var(--ix-dim);
+  animation: ix-in 0.3s ease;
+}
+
+.ix-actions {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 16px;
+  opacity: 0;
+  scale: 0.9;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    scale 0.15s ease;
+}
+
+.ix-bubble-row:hover .ix-actions {
+  opacity: 1;
+  scale: 1;
+  pointer-events: auto;
+}
+
+.ix-actions button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--ix-text);
+  font-size: 13px;
+}
+
+.ix-actions button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ix-typing {
+  flex-direction: row;
+  gap: 4px;
+  padding: 13px 16px;
+}
+
+.ix-typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ix-dim);
+  animation: ix-dot 1.2s ease-in-out infinite;
+}
+
+.ix-typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ix-typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.ix-top {
+  position: absolute;
+  top: var(--safe-top);
+  left: calc(max(var(--safe-left), var(--safe-right)) + 110px);
+  right: max(var(--safe-left), var(--safe-right));
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  height: 52px;
+  padding: 0 10px;
+}
+
+.ix-contact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px 0 5px;
+  border-radius: 20px;
+  position: absolute;
+  left: 50%;
+  translate: calc(-50% - 55px) 0;
+  max-width: calc(100% - 140px);
+}
+
+.ix-contact-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.ix-contact-text b {
+  overflow: hidden;
+  font-size: 13.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ix-contact-text span {
+  overflow: hidden;
+  font-size: 11.5px;
+  color: var(--ix-dim);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ix-contact-text span.is-typing {
+  color: #5ac8fa;
+}
+
+.ix-agent-tag {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(200, 107, 255, 0.2);
+  color: #e0c7ff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ix-calls {
+  display: flex;
+  flex: none;
+  height: 40px;
+  padding: 0 4px;
+  border-radius: 20px;
+}
+
+.ix-calls button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 32px;
+  margin: auto 0;
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--ix-text);
+}
+
+.ix-calls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ix-rail {
+  position: absolute;
+  top: calc(var(--safe-top) + 58px);
+  left: calc(var(--safe-left) + 12px);
+  bottom: calc(var(--safe-bottom) + 12px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 60px;
+  padding: 9px 0;
+  border-radius: 30px;
+}
+
+.ix-rail-gap {
+  flex: 1;
+}
+
+.ix-person {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  transition: scale 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.ix-person:hover {
+  scale: 1.06;
+}
+
+.ix-person::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.ix-person.is-active::after {
+  border-color: #fff;
+}
+
+.ix-person.is-typing::after {
+  border-color: #5ac8fa;
+  animation: ix-ring 1.2s ease-in-out infinite;
+}
+
+.ix-person:has(.is-agent)::after {
+  border-radius: 34%;
+}
+
+.ix-new {
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ix-text);
+}
+
+.ix-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.35);
+}
+
+.ix-avatar.is-agent {
+  border-radius: 32%;
+}
+
+.ix-unread {
+  position: absolute;
+  top: -3px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #ff3b30;
+  box-shadow: 0 0 0 2px rgba(20, 20, 28, 0.95);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  animation: ix-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.ix-tip {
+  position: absolute;
+  left: calc(100% + 16px);
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: rgba(28, 28, 36, 0.96);
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.35);
+  text-align: left;
+  opacity: 0;
+  translate: -6px -50%;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    translate 0.15s ease;
+}
+
+.ix-tip b {
+  font-size: 12.5px;
+  color: #fff;
+}
+
+.ix-tip span {
+  overflow: hidden;
+  font-size: 11.5px;
+  color: var(--ix-dim);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ix-person:hover .ix-tip {
+  opacity: 1;
+  translate: 0 -50%;
+  transition-delay: 0.2s;
+}
+
+.ix-bottom {
+  position: absolute;
+  left: calc(var(--safe-left) + 96px);
+  right: calc(var(--safe-right) + 16px);
+  bottom: calc(var(--safe-bottom) + 14px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.ix-bottom > * {
+  pointer-events: auto;
+}
+
+.ix-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: min(100%, 720px);
+  animation: ix-in 0.3s ease;
+}
+
+.ix-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 13px;
+  border: none;
+  border-radius: 15px;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.ix-suggestion:hover {
+  background: rgba(50, 50, 62, 0.8);
+}
+
+.ix-draft {
+  background:
+    linear-gradient(135deg, rgba(139, 123, 255, 0.35), rgba(255, 122, 176, 0.25)),
+    var(--glass);
+}
+
+.ix-compose {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 720px);
+  padding: 6px;
+  border-radius: 26px;
+}
+
+.ix-replying {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 4px 6px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+  color: var(--ix-dim);
+}
+
+.ix-replying span {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ix-replying b {
+  color: var(--ix-text);
+}
+
+.ix-replying button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ix-dim);
+}
+
+.ix-compose-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ix-compose textarea {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  max-height: 140px;
+  padding: 10px 6px;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--ix-text);
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 20px;
+  scrollbar-width: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.ix-compose textarea::placeholder {
+  color: var(--ix-dim);
+}
+
+.ix-compose textarea.is-drafting {
+  color: #d9d2ff;
+}
+
+.ix-icon-btn,
+.ix-send {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ix-dim);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    scale 0.15s ease;
+}
+
+.ix-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ix-text);
+}
+
+.ix-send {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ix-text);
+}
+
+.ix-send.is-ready {
+  background: #fff;
+  color: #0b0b12;
+}
+
+.ix-send:active {
+  scale: 0.92;
+}
+
+.ix.is-fullscreen .win-frame {
+  padding: 0;
+}
+
+.ix.is-fullscreen .ix-bottom {
+  left: calc(max(var(--safe-left), var(--safe-right)) + 16px);
+  right: calc(max(var(--safe-left), var(--safe-right)) + 16px);
+}
+
+.ix.is-fullscreen .ix-contact {
+  translate: -50% 0;
+}
+
+.ix.is-fullscreen .ix-top {
+  left: max(var(--safe-left), var(--safe-right));
+}
+
+.ix.is-fullscreen .ix-scroll {
+  padding: calc(var(--safe-top) + 72px) calc(max(var(--safe-left), var(--safe-right)) + 28px)
+    calc(var(--safe-bottom) + 150px);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--safe-top) + 30px),
+    #000 calc(var(--safe-top) + 72px),
+    #000 calc(100% - var(--safe-bottom) - 150px),
+    transparent calc(100% - var(--safe-bottom) - 92px)
+  );
+}
+
+@keyframes ix-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes ix-pop {
+  from {
+    scale: 0.4;
+    opacity: 0;
+  }
+}
+
+@keyframes ix-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes ix-ring {
+  50% {
+    border-color: rgba(90, 200, 250, 0.3);
+  }
+}

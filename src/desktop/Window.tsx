@@ -56,7 +56,10 @@ export function Window(props: WindowProps) {
 
   const placement = () => {
     const { x, y } = win()
-    if (onStage()) return `translate(${x}px, ${y}px) perspective(900px) rotateY(0deg) translate(0px, 0px) scale(1)`
+    if (onStage()) {
+      if (!switching()) return `translate(${x}px, ${y}px)`
+      return `translate(${x}px, ${y}px) perspective(900px) rotateY(0deg) translate(0px, 0px) scale(1)`
+    }
     const sandbox = sandboxOf(props.id)
     const thumb = thumbRect(sandbox)
     const tilt = hoveredSandbox() === sandbox ? 9 : 22

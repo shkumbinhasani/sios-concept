@@ -2,6 +2,7 @@ import { onCleanup, onMount } from 'solid-js'
 import { Browser } from './apps/browser/Browser'
 import { Canvas } from './apps/canvas/Canvas'
 import { Monitor } from './apps/monitor/Monitor'
+import { Messages } from './apps/messages/Messages'
 import { MusicPlayer } from './apps/music/MusicPlayer'
 import { Notes } from './apps/notes/Notes'
 import { Terminal } from './apps/terminal/Terminal'
@@ -27,6 +28,7 @@ function App() {
     <main class="desktop" onContextMenu={(e) => e.preventDefault()}>
       <Browser />
       <MusicPlayer />
+      <Messages />
       <Canvas />
       <Notes />
       <Terminal />

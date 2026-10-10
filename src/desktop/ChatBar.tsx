@@ -143,7 +143,7 @@ export function ChatBar() {
 
   return (
     <div class="chat" classList={{ 'has-messages': messages.length > 0 }}>
-      <ProgressiveBlur class="chat-blur chat-blur-rest" sideFade={22} />
+      <ProgressiveBlur class="chat-blur chat-blur-rest" sideFade={22} max={8} />
       <ProgressiveBlur class="chat-blur chat-blur-open" sideFade={22} />
 
       <div class="chat-column">

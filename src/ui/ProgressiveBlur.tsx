@@ -8,13 +8,13 @@ type Edge = 'bottom' | 'left' | 'top'
 const towards = (edge: Edge) => (edge === 'left' ? 'to left' : edge === 'top' ? 'to top' : 'to bottom')
 const across = (edge: Edge) => (edge === 'left' ? 'to bottom' : 'to right')
 
-function edgeMask(index: number, edge: Edge) {
-  const step = 100 / (BLURS.length + 1)
+function edgeMask(index: number, edge: Edge, count: number) {
+  const step = 100 / (count + 1)
   const start = index * step
   const rise = (index + 1) * step
   const hold = (index + 2) * step
   const end = (index + 3) * step
-  if (index >= BLURS.length - 2) return `linear-gradient(${towards(edge)}, transparent ${start}%, #000 ${rise}%)`
+  if (index >= count - 2) return `linear-gradient(${towards(edge)}, transparent ${start}%, #000 ${rise}%)`
   return `linear-gradient(${towards(edge)}, transparent ${start}%, #000 ${rise}%, #000 ${hold}%, transparent ${end}%)`
 }
 
@@ -34,6 +34,7 @@ function maskStyle(mask: string, fade: number, edge: Edge): JSX.CSSProperties {
 
 interface ProgressiveBlurProps {
   class?: string
+  max?: number
   edge?: Edge
   sideFade?: number
 }
@@ -41,17 +42,18 @@ interface ProgressiveBlurProps {
 export function ProgressiveBlur(props: ProgressiveBlurProps) {
   const fade = () => props.sideFade ?? 0
   const edge = () => props.edge ?? 'bottom'
+  const blurs = () => BLURS.filter((b) => b <= (props.max ?? Infinity))
 
   return (
     <div class={`pblur pblur-${edge()} ${props.class ?? ''}`} aria-hidden="true">
-      <For each={BLURS}>
+      <For each={blurs()}>
         {(blur, i) => (
           <div
             class="pblur-layer"
             style={{
               'backdrop-filter': `blur(${blur}px)`,
               '-webkit-backdrop-filter': `blur(${blur}px)`,
-              ...maskStyle(edgeMask(i(), edge()), fade(), edge()),
+              ...maskStyle(edgeMask(i(), edge(), blurs().length), fade(), edge()),
             }}
           />
         )}

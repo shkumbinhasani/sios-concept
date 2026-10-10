@@ -1,7 +1,7 @@
 import { createMemo, createRoot, createSignal } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
 
-export type WindowId = 'browser' | 'music' | 'notes' | 'canvas' | 'terminal' | 'monitor'
+export type WindowId = 'browser' | 'music' | 'messages' | 'notes' | 'canvas' | 'terminal' | 'monitor'
 export type SandboxId = string
 export type SandboxKind = 'local' | 'agent' | 'remote'
 export type SandboxStatus = 'idle' | 'working' | 'waiting'
@@ -93,6 +93,12 @@ function defaultLayout(): Record<WindowId, Rect> {
 
   return {
     browser: { x: personalX, y: (sh - browserH) / 2, w: browserW, h: browserH },
+    messages: {
+      x: left + (sw - clamp(sw * 0.62, 760, 1180)) / 2,
+      y: (sh - clamp(sh * 0.84, 460, 900)) / 2,
+      w: clamp(sw * 0.62, 760, 1180),
+      h: clamp(sh * 0.84, 460, 900),
+    },
     music: { x: personalX + browserW - 90, y: (sh - musicH) / 2 + 28, w: musicW, h: musicH },
     canvas: { x: researchX + notesW - 120, y: (sh - canvasH) / 2, w: canvasW, h: canvasH },
     notes: { x: researchX, y: (sh - notesH) / 2 + 36, w: notesW, h: notesH },
@@ -105,6 +111,7 @@ const initial = defaultLayout()
 const [windows, setWindows] = createStore<Record<WindowId, WindowState>>({
   browser: place(initial.browser, 1),
   music: place(initial.music, 2),
+  messages: { ...place(initial.messages, 7), minimized: true, minimizedAt: 0 },
   notes: place(initial.notes, 3),
   canvas: place(initial.canvas, 4),
   terminal: place(initial.terminal, 5),
@@ -154,7 +161,7 @@ const [sandboxes, setSandboxes] = createStore<Record<SandboxId, Sandbox>>({
     host: 'This Mac',
     status: 'idle',
     activity: 'Reading and music',
-    windows: ['browser', 'music'],
+    windows: ['browser', 'music', 'messages'],
   },
   research: {
     id: 'research',
@@ -209,7 +216,7 @@ const [switching, setSwitching] = createSignal(false)
 const [dropTarget, setDropTarget] = createSignal<SandboxId>()
 const [previousSandbox, setPreviousSandbox] = createSignal<SandboxId>()
 
-let topZ = 6
+let topZ = 7
 
 export { dropTarget, setDropTarget }
 

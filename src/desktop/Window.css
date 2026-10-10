@@ -344,3 +344,20 @@ body.is-interacting iframe {
   box-shadow: none;
   pointer-events: none;
 }
+
+@supports (-moz-appearance: none) {
+  .win {
+    --glass: rgba(30, 30, 38, 0.9);
+  }
+
+  .win-frame *,
+  .win-frame *::before,
+  .win-frame *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .win-frame .pblur-layer {
+    display: none;
+  }
+}
