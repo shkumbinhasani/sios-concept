@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Atlas</title>
+    <link rel="icon" href="icons/atlas.svg" />
+    <link rel="stylesheet" href="si-safe-area.css" />
+    <script src="si-safe-area.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #fff;
+        background: #0c1626;
+      }
+
+      .map {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .panel {
+        position: fixed;
+        border-radius: 18px;
+        background: rgba(18, 24, 38, 0.72);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        backdrop-filter: blur(24px) saturate(160%);
+        box-shadow:
+          inset 0 0.5px 0 rgba(255, 255, 255, 0.22),
+          0 12px 32px rgba(0, 0, 0, 0.35);
+      }
+
+      .search {
+        top: calc(var(--si-safe-top) + 16px);
+        left: calc(var(--si-safe-left) + 16px);
+        width: min(320px, calc(100% - var(--si-safe-left) - var(--si-safe-right) - 32px));
+        padding: 8px;
+      }
+
+      .search input {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: none;
+        border-radius: 12px;
+        outline: none;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        font-size: 15px;
+      }
+
+      .search input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .place {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 8px 3px;
+        font-size: 13px;
+      }
+
+      .place i {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-style: normal;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .place span {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .place small {
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .zoom {
+        top: 50%;
+        right: calc(var(--si-safe-right) + 16px);
+        translate: 0 -50%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .zoom button {
+        width: 44px;
+        height: 44px;
+        border: none;
+        background: transparent;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .zoom button + button {
+        border-top: 0.5px solid rgba(255, 255, 255, 0.14);
+      }
+
+      .route {
+        bottom: calc(var(--si-safe-bottom) + 16px);
+        left: calc((100% + var(--si-safe-left) - var(--si-safe-right)) / 2);
+        translate: -50% 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 14px 12px 18px;
+        white-space: nowrap;
+      }
+
+      .route b {
+        font-size: 20px;
+      }
+
+      .route small {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .route button {
+        padding: 9px 16px;
+        border: none;
+        border-radius: 999px;
+        background: #0a84ff;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .pin {
+        position: fixed;
+        left: calc((100% + var(--si-safe-left) - var(--si-safe-right)) / 2);
+        top: calc((100% + var(--si-safe-top) - var(--si-safe-bottom)) / 2);
+        translate: -50% -50%;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #0a84ff;
+        box-shadow:
+          0 0 0 4px #fff,
+          0 4px 14px rgba(0, 0, 0, 0.4);
+      }
+
+      .pin::after {
+        content: '';
+        position: absolute;
+        inset: -20px;
+        border-radius: 50%;
+        background: rgba(10, 132, 255, 0.35);
+        animation: pulse 2s ease-out infinite;
+      }
+
+      @keyframes pulse {
+        from {
+          transform: scale(0.3);
+          opacity: 1;
+        }
+        to {
+          transform: scale(1.6);
+          opacity: 0;
+        }
+      }
+
+      .si-safe-toggle {
+        right: auto;
+        left: calc(var(--si-safe-left) + 16px);
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="map" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" stroke="rgba(120,160,220,0.08)" stroke-width="1" />
+        </pattern>
+        <radialGradient id="land" cx="0.5" cy="0.5" r="0.6">
+          <stop offset="0" stop-color="#1d3350" />
+          <stop offset="1" stop-color="#15263d" />
+        </radialGradient>
+      </defs>
+      <rect width="1600" height="1000" fill="#0c1626" />
+      <path d="M-50 180 C 250 80, 520 160, 700 120 S 1100 40, 1700 140 L 1700 1100 L -50 1100 Z" fill="url(#land)" />
+      <path d="M980 560 C 1080 500, 1240 520, 1320 600 S 1400 760, 1260 800 S 1000 760, 980 680 Z" fill="#0f2238" />
+      <path d="M300 640 C 380 600, 520 620, 560 690 S 480 820, 380 800 S 260 700, 300 640 Z" fill="#14324a" opacity="0.9" />
+      <rect width="1600" height="1000" fill="url(#grid)" />
+      <g fill="none" stroke-linecap="round">
+        <path d="M-20 520 C 300 480, 600 560, 820 500 S 1250 420, 1640 470" stroke="#2c4a70" stroke-width="16" />
+        <path d="M-20 520 C 300 480, 600 560, 820 500 S 1250 420, 1640 470" stroke="#e6b450" stroke-width="5" />
+        <path d="M800 -20 C 760 220, 860 380, 820 500 S 760 800, 840 1020" stroke="#2c4a70" stroke-width="12" />
+        <path d="M800 -20 C 760 220, 860 380, 820 500 S 760 800, 840 1020" stroke="#cfd8e6" stroke-width="3" />
+        <path d="M200 200 C 400 300, 500 420, 820 500" stroke="#3b5d88" stroke-width="3" />
+        <path d="M820 500 C 1000 600, 1150 650, 1400 900" stroke="#3b5d88" stroke-width="3" />
+        <path d="M820 500 C 950 430, 1080 300, 1300 260" stroke="#0a84ff" stroke-width="6" stroke-dasharray="1 12" />
+      </g>
+      <g fill="rgba(255,255,255,0.55)" font-family="system-ui" font-size="18" letter-spacing="2">
+        <text x="420" y="430">OLD TOWN</text>
+        <text x="1040" y="360">RIVERSIDE</text>
+        <text x="1080" y="700" fill="rgba(140,180,230,0.6)">LAKE MIRA</text>
+        <text x="330" y="720" fill="rgba(140,180,230,0.6)">PARK</text>
+      </g>
+    </svg>
+
+    <div class="pin"></div>
+
+    <div class="panel search">
+      <input placeholder="Search Atlas" />
+      <div class="place"><i>☕️</i><span>Kafeteria Dit' e Nat'<small>Coffee · 4 min walk</small></span></div>
+      <div class="place"><i>📚</i><span>National Library<small>Library · 9 min walk</small></span></div>
+    </div>
+
+    <div class="panel zoom">
+      <button aria-label="Zoom in">+</button>
+      <button aria-label="Zoom out">−</button>
+    </div>
+
+    <div class="panel route">
+      <span><b>12 min</b><br /><small>to Riverside · 2.1 km</small></span>
+      <button>Go</button>
+    </div>
+
+    <button class="si-safe-toggle" onclick="document.documentElement.toggleAttribute('data-si-show-safe')">
+      Safe area
+    </button>
+  </body>
+</html>

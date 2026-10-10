@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3000 2000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="base" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#05061a"/>
+      <stop offset="0.55" stop-color="#0d0a2b"/>
+      <stop offset="1" stop-color="#1a0b2a"/>
+    </linearGradient>
+
+    <radialGradient id="glowViolet" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5a3dff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#5a3dff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowMagenta" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e0337f" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#e0337f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowAmber" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff9a4a" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#ff9a4a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBlue" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#2a8cff" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#2a8cff" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="silkA" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#3b1d8f" stop-opacity="0"/>
+      <stop offset="0.3" stop-color="#6c3cff"/>
+      <stop offset="0.6" stop-color="#d63a8a"/>
+      <stop offset="0.85" stop-color="#ff9a52"/>
+      <stop offset="1" stop-color="#ffcf8a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="silkB" x1="0" y1="1" x2="1" y2="0.2">
+      <stop offset="0" stop-color="#1b2a8f" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#3d5cff"/>
+      <stop offset="0.7" stop-color="#9b3dff"/>
+      <stop offset="1" stop-color="#ff5fa2" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="silkC" x1="0" y1="0.8" x2="1" y2="0.3">
+      <stop offset="0" stop-color="#ff6a3d" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#ff8a4d"/>
+      <stop offset="0.75" stop-color="#ff4f8b"/>
+      <stop offset="1" stop-color="#7a3dff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#fff" stop-opacity="0.9"/>
+      <stop offset="0.7" stop-color="#ffe2c8" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="vignette" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+    </radialGradient>
+
+    <filter id="blurXL" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="140"/>
+    </filter>
+    <filter id="blurL" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="46"/>
+    </filter>
+    <filter id="blurM" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <filter id="blurS" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0"/>
+    </filter>
+  </defs>
+
+  <rect width="3000" height="2000" fill="url(#base)"/>
+
+  <g filter="url(#blurXL)">
+    <ellipse cx="700" cy="420" rx="1100" ry="700" fill="url(#glowViolet)"/>
+    <ellipse cx="2500" cy="600" rx="900" ry="700" fill="url(#glowBlue)"/>
+    <ellipse cx="2200" cy="1650" rx="1100" ry="600" fill="url(#glowMagenta)"/>
+    <ellipse cx="1500" cy="1450" rx="700" ry="380" fill="url(#glowAmber)"/>
+  </g>
+
+  <g fill="none" stroke-linecap="round">
+    <path filter="url(#blurL)" opacity="0.75" stroke="url(#silkB)" stroke-width="320"
+      d="M-300 1900 C 500 1500, 900 1700, 1500 1250 S 2500 500, 3300 520"/>
+    <path filter="url(#blurL)" opacity="0.85" stroke="url(#silkA)" stroke-width="260"
+      d="M-200 2150 C 600 1650, 1100 1900, 1700 1450 S 2600 760, 3300 820"/>
+    <path filter="url(#blurM)" opacity="0.8" stroke="url(#silkC)" stroke-width="140"
+      d="M-100 2250 C 700 1850, 1250 2050, 1850 1600 S 2700 1000, 3300 1080"/>
+    <path filter="url(#blurM)" opacity="0.55" stroke="url(#silkA)" stroke-width="90"
+      d="M-200 1750 C 650 1380, 1000 1560, 1550 1130 S 2450 420, 3300 380"/>
+  </g>
+
+  <g fill="none" stroke-linecap="round" filter="url(#blurS)">
+    <path opacity="0.55" stroke="url(#sheen)" stroke-width="3"
+      d="M-200 2030 C 600 1530, 1100 1780, 1700 1330 S 2600 640, 3300 700"/>
+    <path opacity="0.35" stroke="url(#sheen)" stroke-width="2"
+      d="M-100 2170 C 700 1770, 1250 1970, 1850 1520 S 2700 920, 3300 1000"/>
+    <path opacity="0.3" stroke="url(#sheen)" stroke-width="2"
+      d="M-200 1700 C 650 1330, 1000 1510, 1550 1080 S 2450 370, 3300 330"/>
+    <path opacity="0.18" stroke="url(#sheen)" stroke-width="1.5"
+      d="M-300 1760 C 500 1360, 900 1560, 1500 1110 S 2500 360, 3300 380"/>
+  </g>
+
+  <rect width="3000" height="2000" fill="url(#vignette)"/>
+  <rect width="3000" height="2000" filter="url(#grain)" opacity="0.07" style="mix-blend-mode: overlay"/>
+</svg>

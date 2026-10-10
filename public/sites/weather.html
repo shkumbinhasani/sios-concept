@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aurora Weather</title>
+    <link rel="icon" href="icons/aurora.svg" />
+    <link rel="stylesheet" href="si-safe-area.css" />
+    <script src="si-safe-area.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+
+      body {
+        overflow: hidden;
+        font-family: system-ui, -apple-system, 'SF Pro Display', sans-serif;
+        color: #fff;
+        background: linear-gradient(180deg, #1b2a6b 0%, #5a3d9a 38%, #e0708a 72%, #ffb27a 100%);
+      }
+
+      .sky {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .sun {
+        position: absolute;
+        left: 62%;
+        top: 58%;
+        width: 46vmin;
+        height: 46vmin;
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff6d8 0%, #ffd38a 30%, rgba(255, 160, 110, 0) 70%);
+        filter: blur(2px);
+      }
+
+      .cloud {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        filter: blur(28px);
+        animation: drift 60s linear infinite;
+      }
+
+      .cloud.a {
+        width: 60vw;
+        height: 16vh;
+        top: 22%;
+        left: -20%;
+      }
+
+      .cloud.b {
+        width: 40vw;
+        height: 12vh;
+        top: 48%;
+        left: 30%;
+        animation-duration: 80s;
+        opacity: 0.7;
+      }
+
+      .cloud.c {
+        width: 70vw;
+        height: 20vh;
+        top: 70%;
+        left: -40%;
+        animation-duration: 100s;
+        opacity: 0.5;
+      }
+
+      @keyframes drift {
+        to {
+          transform: translateX(60vw);
+        }
+      }
+
+      .app {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr min(340px, 34%);
+        grid-template-rows: auto 1fr auto;
+        gap: 24px;
+        height: 100%;
+        padding: calc(var(--si-safe-top) + 28px) calc(var(--si-safe-right) + 32px) calc(var(--si-safe-bottom) + 28px)
+          calc(var(--si-safe-left) + 32px);
+      }
+
+      .place {
+        grid-column: 1 / -1;
+      }
+
+      .city {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+
+      .now {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .temp {
+        font-size: clamp(88px, 16vw, 180px);
+        font-weight: 200;
+        line-height: 0.9;
+        letter-spacing: -0.05em;
+      }
+
+      .condition {
+        margin-top: 10px;
+        font-size: 20px;
+        font-weight: 500;
+      }
+
+      .range {
+        margin-top: 4px;
+        opacity: 0.75;
+      }
+
+      .glass {
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.14);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        backdrop-filter: blur(24px) saturate(160%);
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.4);
+      }
+
+      .week {
+        grid-column: 2;
+        grid-row: 2 / 4;
+        align-self: end;
+        padding: 16px 18px;
+      }
+
+      .week h2,
+      .hours h2 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.7;
+      }
+
+      .day {
+        display: grid;
+        grid-template-columns: 52px 26px 1fr;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        font-size: 14px;
+      }
+
+      .bar {
+        position: relative;
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .bar i {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #7fd3ff, #ffd36b, #ff8a5c);
+      }
+
+      .hours {
+        grid-column: 1;
+        grid-row: 3;
+        padding: 16px 18px;
+        min-width: 0;
+      }
+
+      .hour-row {
+        display: flex;
+        gap: 22px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .hour {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-width: 44px;
+        font-size: 14px;
+      }
+
+      .hour b {
+        font-size: 17px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 760px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .week {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sky">
+      <div class="sun"></div>
+      <div class="cloud a"></div>
+      <div class="cloud b"></div>
+      <div class="cloud c"></div>
+    </div>
+
+    <main class="app">
+      <section class="place">
+        <p class="city">Prishtina · Thursday</p>
+        <div class="now">
+          <span class="temp">18°</span>
+        </div>
+        <div class="condition">Clear sunset, light breeze</div>
+        <div class="range">H 21° · L 9°</div>
+      </section>
+
+      <section class="hours glass">
+        <h2>Next hours</h2>
+        <div class="hour-row" id="hours"></div>
+      </section>
+
+      <section class="week glass">
+        <h2>10-day forecast</h2>
+        <div id="week"></div>
+      </section>
+    </main>
+
+    <button class="si-safe-toggle" onclick="document.documentElement.toggleAttribute('data-si-show-safe')">
+      Safe area
+    </button>
+
+    <script>
+      const icons = ['☀️', '🌤️', '⛅️', '🌥️', '🌙', '✨']
+      const hours = document.getElementById('hours')
+      for (let i = 0; i < 12; i++) {
+        const hour = (18 + i) % 24
+        hours.insertAdjacentHTML(
+          'beforeend',
+          `<div class="hour"><span>${i === 0 ? 'Now' : String(hour).padStart(2, '0')}</span><span>${icons[hour > 19 || hour < 6 ? 4 + (i % 2) : i % 4]}</span><b>${18 - Math.round(i * 0.8)}°</b></div>`,
+        )
+      }
+      const days = ['Today', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed']
+      const week = document.getElementById('week')
+      days.forEach((day, i) => {
+        const low = 8 + (i % 3)
+        const high = 18 + ((i * 7) % 6)
+        week.insertAdjacentHTML(
+          'beforeend',
+          `<div class="day"><span>${day}</span><span>${icons[i % 4]}</span><span class="bar"><i style="left:${(low - 5) * 4}%;right:${100 - (high - 5) * 4}%"></i></span></div>`,
+        )
+      })
+    </script>
+  </body>
+</html>

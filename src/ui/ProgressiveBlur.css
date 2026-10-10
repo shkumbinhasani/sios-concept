@@ -1,0 +1,22 @@
+.pblur {
+  position: absolute;
+  pointer-events: none;
+}
+
+.pblur-layer,
+.pblur-tint {
+  position: absolute;
+  inset: 0;
+}
+
+.pblur-tint {
+  background: linear-gradient(to bottom, transparent 0%, rgba(6, 6, 16, 0.25) 55%, rgba(6, 6, 16, 0.55) 100%);
+}
+
+.pblur-left .pblur-tint {
+  background: linear-gradient(to left, transparent 0%, rgba(6, 6, 16, 0.2) 55%, rgba(6, 6, 16, 0.45) 100%);
+}
+
+.pblur-top .pblur-tint {
+  background: linear-gradient(to top, transparent 0%, rgba(6, 6, 16, 0.12) 60%, rgba(6, 6, 16, 0.3) 100%);
+}

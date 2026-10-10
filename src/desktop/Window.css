@@ -1,0 +1,329 @@
+.win {
+  --titlebar-height: 52px;
+  --win-radius: 14px;
+  --win-bg: #1e1e20;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: var(--win-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition:
+    box-shadow 0.2s ease,
+    opacity 0.2s ease,
+    scale 0.2s ease,
+    visibility 0s;
+  transform-origin: 0 0;
+}
+
+.win.is-focused {
+  box-shadow: 0 24px 70px 6px rgba(0, 0, 0, 0.55);
+}
+
+.win.is-hidden {
+  opacity: 0;
+  scale: 0.94;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    scale 0.2s ease,
+    visibility 0s 0.2s;
+}
+
+.win.is-offstage {
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1),
+    box-shadow 0.2s ease;
+}
+
+.win.is-switching {
+  transition:
+    transform 0.56s cubic-bezier(0.25, 0.9, 0.2, 1),
+    box-shadow 0.3s ease;
+}
+
+.win.is-offstage.is-hidden {
+  visibility: hidden;
+}
+
+.win.is-minimized {
+  scale: 0.2;
+  transition:
+    opacity 0.3s ease,
+    scale 0.3s cubic-bezier(0.5, 0, 0.75, 0),
+    visibility 0s 0.3s;
+}
+
+.win.is-animating {
+  transition: none;
+  box-shadow: none;
+}
+
+.win.is-animating .win-frame {
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.win.is-maximized {
+  --win-radius: 0px;
+}
+
+.win-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  clip-path: inset(0 round var(--win-radius));
+  background: var(--win-bg);
+}
+
+.win-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--win-radius);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.win-titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: var(--titlebar-height);
+  padding: 0 12px 0 88px;
+  gap: 8px;
+}
+
+.win-title {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.win:not(.is-focused) .win-title {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.win-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.win-lights {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  gap: 8px;
+  z-index: 1;
+}
+
+.win-lights-floating {
+  top: 8px;
+  left: 10px;
+  translate: none;
+  z-index: 5;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+  box-shadow: var(--glass-edge);
+}
+
+.win-light {
+  display: grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25);
+}
+
+.win-light svg {
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.win-light svg .fill {
+  stroke: none;
+  fill: rgba(0, 0, 0, 0.6);
+}
+
+.win-lights:hover svg {
+  opacity: 1;
+}
+
+.win-light-close {
+  background: #ff5f57;
+}
+
+.win-light-min {
+  background: #febc2e;
+}
+
+.win-light-zoom {
+  background: #28c840;
+}
+
+.win-light:active {
+  filter: brightness(0.8);
+}
+
+.win:not(.is-focused) .win-lights:not(:hover) .win-light {
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+}
+
+.win-edge {
+  position: absolute;
+  z-index: 20;
+}
+
+.win-edge-n,
+.win-edge-s {
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.win-edge-e,
+.win-edge-w {
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.win-edge-n {
+  top: -4px;
+}
+
+.win-edge-s {
+  bottom: -4px;
+}
+
+.win-edge-e {
+  right: -4px;
+}
+
+.win-edge-w {
+  left: -4px;
+}
+
+.win-edge-ne,
+.win-edge-nw,
+.win-edge-se,
+.win-edge-sw {
+  width: 16px;
+  height: 16px;
+}
+
+.win-edge-ne {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+
+.win-edge-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+
+.win-edge-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+
+.win-edge-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+
+body.is-interacting iframe {
+  pointer-events: none;
+}
+
+.win.is-fullscreen {
+  --win-radius: 0px;
+  box-shadow: none;
+}
+
+.win.is-fullscreen .win-frame {
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+
+.win.is-fullscreen .win-frame::after {
+  display: none;
+}
+
+.win.is-fullscreen .win-lights-floating {
+  left: calc(var(--safe-left) + 10px);
+  top: calc(var(--safe-top) + 8px);
+}
+
+
+
+.win-pillbar {
+  position: absolute;
+  top: var(--safe-top);
+  left: var(--safe-left);
+  right: var(--safe-right);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 110px;
+}
+
+.win-pill-title {
+  overflow: hidden;
+  max-width: 100%;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 36px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.win:not(.is-focused) .win-pill-title {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.win.is-fullscreen .win-pillbar {
+  left: max(var(--safe-left), var(--safe-right));
+  right: max(var(--safe-left), var(--safe-right));
+}
+
+.win.is-fullscreen.mo .win-frame,
+.win.is-fullscreen.tm .win-frame {
+  padding-inline: max(var(--safe-left), var(--safe-right));
+}

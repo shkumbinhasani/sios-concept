@@ -1,0 +1,78 @@
+.mo {
+  --win-bg: #1c1c1f;
+}
+
+.mo-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 62px 18px 18px;
+}
+
+.mo-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.mo-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.mo-value {
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.mo-host {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.mo-cores {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  height: 90px;
+}
+
+.mo-core {
+  position: relative;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.mo-core-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #30d158, #a6f36b);
+  transform-origin: bottom;
+  transition: transform 0.6s ease;
+}
+
+.mo-history {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+  min-height: 40px;
+}
+
+.mo-tick {
+  flex: 1;
+  height: 100%;
+  border-radius: 1px;
+  background: rgba(10, 132, 255, 0.75);
+  transform-origin: bottom;
+  transition: transform 0.6s ease;
+}
+
+.mo.is-fullscreen .mo-body {
+  width: min(100%, 900px);
+  margin: 0 auto;
+}

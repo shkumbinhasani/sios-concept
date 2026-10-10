@@ -1,0 +1,278 @@
+.mu {
+  --win-bg: var(--c3);
+}
+
+.mu .win-body {
+  position: static;
+}
+
+.mu-drag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 52px;
+}
+
+.mu-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 70% at 20% 0%, color-mix(in srgb, var(--c1) 55%, transparent), transparent 70%),
+    radial-gradient(120% 80% at 90% 40%, color-mix(in srgb, var(--c2) 45%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--c3) 70%, #000) 0%, #0b0b0d 100%);
+  transition: background 0.6s ease;
+}
+
+.mu-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.45));
+}
+
+.mu-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 58px 24px 18px;
+  color: #fff;
+}
+
+.mu-stage {
+  flex: none;
+  align-self: center;
+  width: min(100%, 300px);
+  scale: 0.84;
+  transition: scale 0.45s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.mu-stage.is-playing {
+  scale: 1;
+}
+
+.mu-art {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 25% 20%, var(--c1), transparent 55%),
+    radial-gradient(circle at 80% 85%, var(--c2), transparent 60%),
+    linear-gradient(135deg, var(--c2), var(--c3));
+}
+
+.mu-art-ring {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 65%);
+  mix-blend-mode: overlay;
+}
+
+.mu-art-ring::after {
+  content: '';
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.mu-art-large {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.12),
+    0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.mu-art-small {
+  flex: none;
+  width: 36px;
+  border-radius: 5px;
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+}
+
+.mu-info {
+  margin-top: 18px;
+  min-width: 0;
+}
+
+.mu-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mu-artist {
+  margin-top: 1px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mu-progress {
+  margin-top: 14px;
+}
+
+.mu-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mu-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0 4px;
+}
+
+.mu-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  transition:
+    scale 0.12s ease,
+    background 0.15s ease;
+}
+
+.mu-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mu-btn:active {
+  scale: 0.9;
+}
+
+.mu-btn-play {
+  width: 56px;
+  height: 56px;
+}
+
+.mu-btn-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mu-btn-small.is-active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.mu-volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.mu-volume .slider {
+  flex: 1;
+}
+
+.mu-queue {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin: 16px -12px 0;
+}
+
+.mu-queue-heading {
+  padding: 0 12px 6px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.mu-queue-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(180deg, #000 85%, transparent);
+}
+
+.mu-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+
+.mu-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.mu-row:focus-visible {
+  outline: 2px solid rgba(10, 132, 255, 0.8);
+  outline-offset: -2px;
+}
+
+.mu-row-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.mu-row-title,
+.mu-row-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mu-row-artist,
+.mu-row-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mu-row-time {
+  font-variant-numeric: tabular-nums;
+}
+
+.mu.is-fullscreen .mu-content {
+  justify-content: center;
+  width: min(460px, 100%);
+  margin: 0 auto;
+  padding-top: 24px;
+}
+
+.mu.is-fullscreen .mu-stage {
+  width: min(100%, 380px);
+}
+
+.mu.is-fullscreen .mu-queue {
+  flex: 0 1 260px;
+}
+
+.mu.is-fullscreen .win-frame {
+  padding-inline: max(var(--safe-left), var(--safe-right));
+}

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meridian — The quiet arrival</title>
+    <link rel="icon" href="icons/meridian.svg" />
+    <link rel="stylesheet" href="si-safe-area.css" />
+    <script src="si-safe-area.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        --gutter: calc(max(var(--si-safe-left), var(--si-safe-right)) + 28px);
+        scroll-padding-top: calc(var(--si-safe-top) + 56px);
+      }
+
+      body {
+        margin: 0;
+        background: #f6f3ee;
+        color: #1b1a17;
+        font-family: 'New York', 'Iowan Old Style', Georgia, serif;
+      }
+
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        padding-top: var(--si-safe-top);
+        background: rgba(246, 243, 238, 0.72);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.12);
+      }
+
+      .nav-row {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        height: 52px;
+        padding: 0 var(--gutter);
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+      }
+
+      .logo {
+        font-family: 'New York', Georgia, serif;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .nav-row a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.7;
+      }
+
+      .nav-row .spacer {
+        flex: 1;
+      }
+
+      .hero {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        min-height: 78vh;
+        padding: calc(var(--si-safe-top) + 92px) var(--gutter) 56px;
+        background:
+          radial-gradient(60% 70% at 70% 30%, #ff9a6b 0%, transparent 60%),
+          radial-gradient(70% 80% at 20% 80%, #5b4bd6 0%, transparent 65%),
+          conic-gradient(from 200deg at 60% 60%, #1d1747, #3a2a8a, #b44a7a, #ff9a6b, #1d1747);
+        color: #fff;
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.55));
+      }
+
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        width: min(820px, 100%);
+        margin: 0 auto;
+      }
+
+      .kicker {
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+
+      h1 {
+        margin: 12px 0 14px;
+        font-size: clamp(40px, 6vw, 76px);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+
+      .dek {
+        max-width: 620px;
+        font-size: 20px;
+        line-height: 1.45;
+        opacity: 0.9;
+      }
+
+      article {
+        width: min(680px, 100%);
+        margin: 0 auto;
+        padding: 56px var(--gutter) calc(var(--si-safe-bottom) + 80px);
+        box-sizing: content-box;
+        font-size: 19px;
+        line-height: 1.7;
+      }
+
+      article p:first-of-type::first-letter {
+        float: left;
+        margin: 6px 10px 0 0;
+        font-size: 74px;
+        line-height: 0.8;
+        font-weight: 700;
+        color: #5b4bd6;
+      }
+
+      .byline {
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+        color: #6b665e;
+        margin-bottom: 28px;
+      }
+
+      blockquote {
+        margin: 40px 0;
+        padding: 0 0 0 24px;
+        border-left: 3px solid #ff9a6b;
+        font-size: 26px;
+        line-height: 1.35;
+        font-style: italic;
+      }
+
+      h2 {
+        margin: 44px 0 8px;
+        font-size: 26px;
+        letter-spacing: -0.01em;
+      }
+
+      footer {
+        padding: 32px var(--gutter) calc(var(--si-safe-bottom) + 32px);
+        background: #1b1a17;
+        color: rgba(255, 255, 255, 0.6);
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="nav-row">
+        <span class="logo">Meridian</span>
+        <a href="#">Ideas</a>
+        <a href="#">Machines</a>
+        <a href="#">Futures</a>
+        <span class="spacer"></span>
+        <a href="#">Subscribe</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="kicker">Essay · Machines</div>
+        <h1>The quiet arrival of minds that think faster than we do</h1>
+        <p class="dek">It will not look like the films. It will look like software getting a little more helpful every week, until one week it is not software any more.</p>
+      </div>
+    </section>
+
+    <article>
+      <div class="byline">By Ana Krasniqi · 12 minute read</div>
+      <p>Every operating system is a set of promises about where things go. Windows go on the desktop, files go in folders, and your attention goes wherever the last notification sent it. An operating system for a superintelligence has to promise something new: that the work happening on your behalf stays visible, interruptible and yours.</p>
+      <p>That sounds abstract until you watch it run. A research agent reads forty papers in the strip at the edge of your screen. A build server finishes a test run while you are reading this sentence. You glance, and you know what each of them is doing.</p>
+      <blockquote>The best interface for a mind faster than yours is one that tells you, at a glance, what it is doing with your time.</blockquote>
+      <h2>Edges matter</h2>
+      <p>Even the edges of the screen carry meaning now. The strip on the left belongs to the agents; the bar at the bottom belongs to the conversation. A page that knows this can run its colour all the way to the glass and still keep its words where you can read them.</p>
+      <p>This page is one of them. Press the S key and you will see the frame the operating system handed it: everything inside the dashed line is guaranteed to be clear, everything outside is shared with the system.</p>
+      <h2>What comes next</h2>
+      <p>None of this needs a bigger screen or a smarter chip. It needs software that agrees on where things go, and pages that are polite enough to ask.</p>
+    </article>
+
+    <footer>Meridian · A demo site for SI OS safe areas</footer>
+
+    <button class="si-safe-toggle" onclick="document.documentElement.toggleAttribute('data-si-show-safe')">
+      Safe area
+    </button>
+  </body>
+</html>

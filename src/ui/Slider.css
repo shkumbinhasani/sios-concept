@@ -1,0 +1,36 @@
+.slider {
+  display: flex;
+  align-items: center;
+  height: 16px;
+  outline: none;
+}
+
+.slider-track {
+  position: relative;
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+  transition: height 0.15s ease;
+}
+
+.slider-fill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.slider:hover .slider-track,
+.slider.is-dragging .slider-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.slider:hover .slider-fill,
+.slider.is-dragging .slider-fill {
+  background: #fff;
+}
+
+.slider:focus-visible .slider-track {
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.6);
+}
