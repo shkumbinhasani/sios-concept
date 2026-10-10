@@ -4,6 +4,7 @@ import { ArrowUp, Mic, Plus } from '../ui/icons'
 import { ProgressiveBlur } from '../ui/ProgressiveBlur'
 import { delegate } from './agents'
 import { replyTo, type Reply } from './replies'
+import { LiveShelf } from './LiveShelf'
 import { SandboxIcon } from './SandboxIcon'
 import { sandboxes, switchSandbox, type SandboxId } from './store'
 import './ChatBar.css'
@@ -168,7 +169,7 @@ export function ChatBar() {
                     >
                       <span class="msg-text">
                         {message.text}
-                        <Show when={message.sandbox}>
+                        <Show when={message.sandbox && sandboxes[message.sandbox] ? message.sandbox : undefined}>
                           {(id) => (
                             <button class="msg-chip" onClick={() => switchSandbox(id())}>
                               <SandboxIcon id={id()} size={18} status={false} />
@@ -186,6 +187,7 @@ export function ChatBar() {
           </div>
         </div>
 
+        <LiveShelf />
         <form
           class="chat-bar"
           onSubmit={(e) => {

@@ -1,11 +1,17 @@
-import { createMemo, For } from 'solid-js'
+import { createMemo, For, Show } from 'solid-js'
 import { ProgressiveBlur } from '../ui/ProgressiveBlur'
 import { SandboxIcon } from './SandboxIcon'
 import {
   activeSandbox,
+  dropTarget,
   hasFullscreen,
   hoveredSandbox,
-  SANDBOX_ORDER,
+  createSandbox,
+  draggingWindow,
+  isVisible,
+  NEW_SANDBOX,
+  newSlotRect,
+  sandboxOrder,
   sandboxes,
   setHoveredSandbox,
   switchSandbox,
@@ -23,7 +29,12 @@ function Thumb(props: { id: SandboxId }) {
   return (
     <button
       class="stage-thumb"
-      classList={{ 'is-hovered': hoveredSandbox() === props.id, 'is-active': active() }}
+      data-sandbox={props.id}
+      classList={{
+        'is-hovered': hoveredSandbox() === props.id,
+        'is-active': active(),
+        'is-drop': dropTarget() === props.id,
+      }}
       tabIndex={active() ? -1 : 0}
       aria-hidden={active()}
       style={{
@@ -36,6 +47,9 @@ function Thumb(props: { id: SandboxId }) {
       onPointerLeave={() => setHoveredSandbox(undefined)}
       onClick={() => switchSandbox(props.id)}
     >
+      <Show when={!sandbox().windows.some(isVisible)}>
+        <span class="stage-empty">Empty</span>
+      </Show>
       <span class="stage-badge">
         <SandboxIcon id={props.id} size={Math.round(Math.min(46, Math.max(32, rect().w * 0.2)))} />
       </span>
@@ -57,7 +71,25 @@ export function StageStrip() {
       >
         <ProgressiveBlur class="stage-blur-layers" edge="left" sideFade={6} />
       </div>
-      <For each={SANDBOX_ORDER}>{(id) => <Thumb id={id} />}</For>
+      <For each={sandboxOrder()}>{(id) => <Thumb id={id} />}</For>
+      <button
+        class="stage-new"
+        data-sandbox={NEW_SANDBOX}
+        classList={{ 'is-slot': draggingWindow(), 'is-drop': dropTarget() === NEW_SANDBOX }}
+        style={{
+          transform: `translate(${newSlotRect().x}px, ${newSlotRect().y}px)`,
+          width: `${newSlotRect().w}px`,
+          height: `${newSlotRect().h}px`,
+        }}
+        aria-label="New sandbox"
+        title="New sandbox"
+        onClick={() => switchSandbox(createSandbox())}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>New sandbox</span>
+      </button>
     </nav>
   )
 }

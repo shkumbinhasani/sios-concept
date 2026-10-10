@@ -8,7 +8,15 @@ import {
   isOnStage,
   MIN_HEIGHT,
   MIN_WIDTH,
+  dropTarget,
   minimizeWindow,
+  createSandbox,
+  moveWindowTo,
+  NEW_SANDBOX,
+  setDraggingWindow,
+  setDropTarget,
+  setHoveredSandbox,
+  type SandboxId,
   sandboxOf,
   setWindowRect,
   switching,
@@ -21,6 +29,7 @@ import {
   type Rect,
   type WindowId,
 } from './store'
+import { onRestoreFrom, pillId } from './LiveShelf'
 import './Window.css'
 
 type Edge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
@@ -56,6 +65,7 @@ export function Window(props: WindowProps) {
     return `translate(${thumb.x}px, ${thumb.y}px) perspective(900px) rotateY(${tilt}deg) translate(${offsetX}px, ${offsetY}px) scale(${thumb.scale})`
   }
   const [animating, setAnimating] = createSignal(false)
+  const [carrying, setCarrying] = createSignal(false)
   let section!: HTMLElement
   let frame!: HTMLDivElement
 
@@ -110,6 +120,46 @@ export function Window(props: WindowProps) {
     motion.onfinish = motion.oncancel = () => setAnimating(false)
   }
 
+  function rectTransform(target: DOMRect, box: DOMRect) {
+    return `translate(${target.left - box.left}px, ${target.top - box.top}px) scale(${target.width / box.width}, ${target.height / box.height})`
+  }
+
+  function minimize() {
+    const from = section.getBoundingClientRect()
+    minimizeWindow(props.id)
+    requestAnimationFrame(() => {
+      const pill = document.getElementById(pillId(props.id))?.getBoundingClientRect()
+      if (!pill) return
+      frame.getAnimations().forEach((a) => a.cancel())
+      frame.style.transformOrigin = '0 0'
+      const motion = frame.animate(
+        [
+          { transform: 'none', opacity: 1, clipPath: 'inset(0 round 14px)' },
+          { transform: rectTransform(pill, from), opacity: 0.2, clipPath: `inset(0 round ${(pill.height / 2) * (from.height / pill.height)}px)` },
+        ],
+        { duration: 420, easing: 'cubic-bezier(0.5, 0, 0.2, 1)', fill: 'forwards' },
+      )
+      motion.onfinish = () => {
+        motion.cancel()
+        frame.style.transformOrigin = ''
+      }
+    })
+  }
+
+  onRestoreFrom(props.id, (pill) => {
+    frame.getAnimations().forEach((a) => a.cancel())
+    const to = section.getBoundingClientRect()
+    setAnimating(true)
+    const motion = frame.animate(
+      [
+        { transform: rectTransform(pill, to), opacity: 0.2, clipPath: `inset(0 round ${(pill.height / 2) * (to.height / pill.height)}px)` },
+        { transform: 'none', opacity: 1, clipPath: `inset(0 round ${radiusFor()}px)` },
+      ],
+      { duration: 460, easing: 'cubic-bezier(0.25, 0.9, 0.2, 1)' },
+    )
+    motion.onfinish = motion.oncancel = () => setAnimating(false)
+  })
+
   function zoom() {
     if (win().fullscreen) return
     animate(() => toggleMaximize(props.id), win().maximized ? win().restore : undefined)
@@ -121,15 +171,20 @@ export function Window(props: WindowProps) {
 
   const safe = () => (win().fullscreen && onStage() ? safeArea() : { top: 0, right: 0, bottom: 0, left: 0 })
 
-  function track(event: PointerEvent, onMove: (dx: number, dy: number) => void) {
+  function track(
+    event: PointerEvent,
+    onMove: (dx: number, dy: number, e: PointerEvent) => void,
+    onEnd?: (e: PointerEvent) => void,
+  ) {
     const target = event.currentTarget as HTMLElement
     const startX = event.clientX
     const startY = event.clientY
     target.setPointerCapture(event.pointerId)
     document.body.classList.add('is-interacting')
 
-    const move = (e: PointerEvent) => onMove(e.clientX - startX, e.clientY - startY)
-    const end = () => {
+    const move = (e: PointerEvent) => onMove(e.clientX - startX, e.clientY - startY, e)
+    const end = (e: PointerEvent) => {
+      onEnd?.(e)
       target.removeEventListener('pointermove', move)
       target.removeEventListener('pointerup', end)
       target.removeEventListener('pointercancel', end)
@@ -154,16 +209,52 @@ export function Window(props: WindowProps) {
       start.y = 0
     }
 
-    track(event, (dx, dy) => {
-      if (wasMaximized && Math.hypot(dx, dy) < 4) return
-      const maxY = window.innerHeight - BOTTOM_SPACE - 40
-      setWindowRect(props.id, {
-        x: Math.min(Math.max(start.x + dx, 80 - start.w), window.innerWidth - 80),
-        y: Math.min(Math.max(start.y + dy, 0), maxY),
-        w: start.w,
-        h: start.h,
-      })
-    })
+    const home: Rect = { x: win().x, y: win().y, w: win().w, h: win().h }
+    setCarrying(true)
+    let dragged = false
+
+    track(
+      event,
+      (dx, dy, e) => {
+        if (wasMaximized && Math.hypot(dx, dy) < 4) return
+        if (!dragged && Math.hypot(dx, dy) > 4) {
+          dragged = true
+          setDraggingWindow(true)
+        }
+        const maxY = window.innerHeight - BOTTOM_SPACE - 40
+        setWindowRect(props.id, {
+          x: Math.min(Math.max(start.x + dx, 80 - start.w), window.innerWidth - 80),
+          y: Math.min(Math.max(start.y + dy, 0), maxY),
+          w: start.w,
+          h: start.h,
+        })
+        const over = sandboxUnder(e.clientX, e.clientY)
+        if (over !== dropTarget()) {
+          setDropTarget(over)
+          setHoveredSandbox(over)
+        }
+        if (over) {
+          const box = frame.getBoundingClientRect()
+          frame.style.transformOrigin = `${e.clientX - box.left}px ${e.clientY - box.top}px`
+        }
+      },
+      () => {
+        setCarrying(false)
+        setDraggingWindow(false)
+        const target = dropTarget()
+        setDropTarget(undefined)
+        setHoveredSandbox(undefined)
+        if (!target) return
+        setWindowRect(props.id, wasMaximized ? start : home)
+        moveWindowTo(props.id, target === NEW_SANDBOX ? createSandbox() : target)
+      },
+    )
+  }
+
+  function sandboxUnder(x: number, y: number): SandboxId | undefined {
+    const thumb = document.elementsFromPoint(x, y).find((el) => el.closest('[data-sandbox]'))
+    const id = thumb?.closest<HTMLElement>('[data-sandbox]')?.dataset.sandbox as SandboxId | undefined
+    return id && id !== sandboxOf(props.id) ? id : undefined
   }
 
   function startResize(edge: Edge, event: PointerEvent) {
@@ -197,7 +288,7 @@ export function Window(props: WindowProps) {
           <path d="M1.5 1.5l5 5M6.5 1.5l-5 5" />
         </svg>
       </button>
-      <button class="win-light win-light-min" aria-label="Minimize" onClick={() => minimizeWindow(props.id)}>
+      <button class="win-light win-light-min" aria-label="Minimize" onClick={minimize}>
         <svg viewBox="0 0 8 8">
           <path d="M1.2 4h5.6" />
         </svg>
@@ -228,6 +319,7 @@ export function Window(props: WindowProps) {
         'is-fullscreen': !!win().fullscreen,
         'is-animating': animating(),
         'is-switching': switching(),
+        'is-carried': onStage() && !!dropTarget() && carrying(),
       }}
       style={{
         ...props.style,

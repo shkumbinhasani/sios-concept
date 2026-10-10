@@ -2,7 +2,7 @@ import { createMemo, createRoot, createSignal } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
 
 export type WindowId = 'browser' | 'music' | 'notes' | 'canvas' | 'terminal' | 'monitor'
-export type SandboxId = 'personal' | 'research' | 'build'
+export type SandboxId = string
 export type SandboxKind = 'local' | 'agent' | 'remote'
 export type SandboxStatus = 'idle' | 'working' | 'waiting'
 
@@ -19,6 +19,7 @@ export interface WindowState extends Rect {
   minimized: boolean
   maximized: boolean
   fullscreen?: boolean
+  minimizedAt?: number
   moved?: boolean
   restore?: Rect
   windowed?: Rect
@@ -39,6 +40,7 @@ export interface Sandbox {
   status: SandboxStatus
   activity: string
   windows: WindowId[]
+  tint?: number
 }
 
 export const BOTTOM_SPACE = 96
@@ -174,14 +176,64 @@ const [sandboxes, setSandboxes] = createStore<Record<SandboxId, Sandbox>>({
   },
 })
 
-export const SANDBOX_ORDER: SandboxId[] = ['personal', 'research', 'build']
+const [sandboxOrder, setSandboxOrder] = createSignal<SandboxId[]>(['personal', 'research', 'build'])
+
+export const NEW_SANDBOX = '__new'
+
+const [draggingWindow, setDraggingWindow] = createSignal(false)
+
+export { draggingWindow, sandboxOrder, setDraggingWindow }
+
+let sandboxCount = 0
+
+export function createSandbox(name?: string, kind: SandboxKind = 'local') {
+  const n = ++sandboxCount
+  const id = `sandbox-${n}`
+  setSandboxes(id, {
+    id,
+    name: name?.trim() || `Desktop ${n + 1}`,
+    kind,
+    host: kind === 'agent' ? 'Sub-agent' : kind === 'remote' ? 'Remote' : 'This Mac',
+    status: 'idle',
+    activity: 'Empty',
+    windows: [],
+    tint: (n - 1) % 5,
+  })
+  setSandboxOrder((list) => [...list, id])
+  return id
+}
 
 const [activeSandbox, setActiveSandbox] = createSignal<SandboxId>('personal')
 const [hoveredSandbox, setHoveredSandbox] = createSignal<SandboxId>()
 const [switching, setSwitching] = createSignal(false)
+const [dropTarget, setDropTarget] = createSignal<SandboxId>()
 const [previousSandbox, setPreviousSandbox] = createSignal<SandboxId>()
 
 let topZ = 6
+
+export { dropTarget, setDropTarget }
+
+export function moveWindowTo(id: WindowId, target: SandboxId) {
+  const from = sandboxOf(id)
+  if (from === target) return
+  setSandboxes(from, 'windows', (list) => list.filter((w) => w !== id))
+  setSandboxes(target, 'windows', (list) => [...list, id])
+  setWindows(id, { minimized: false, z: ++topZ })
+  pruneSandboxes()
+}
+
+function pruneSandboxes() {
+  const doomed = sandboxOrder().filter(
+    (id) => id !== activeSandbox() && sandboxes[id].windows.length === 0 && sandboxes[id].status === 'idle',
+  )
+  if (!doomed.length) return
+  setSandboxOrder((list) => list.filter((id) => !doomed.includes(id)))
+  setSandboxes(
+    produce((all) => {
+      for (const id of doomed) delete all[id]
+    }),
+  )
+}
 
 export { activeSandbox, hoveredSandbox, previousSandbox, sandboxes, setHoveredSandbox, switching, windows }
 
@@ -196,7 +248,7 @@ export function windowLayer(id: WindowId) {
 }
 
 export function offstageSandboxes() {
-  return SANDBOX_ORDER.filter((id) => id !== activeSandbox())
+  return sandboxOrder().filter((id) => id !== activeSandbox())
 }
 
 function groupBounds(id: SandboxId): Rect {
@@ -212,26 +264,54 @@ function groupBounds(id: SandboxId): Rect {
   return { x, y, w: right - x, h: bottom - y }
 }
 
-export function thumbRect(id: SandboxId) {
+const NEW_SLOT_BUTTON = 40
+
+function stripLayout() {
   const width = thumbWidth()
-  const maxHeight = width * 0.8
-  const gap = clamp(width * 0.32, 52, 84)
   const list = offstageSandboxes()
-  const boxes = list.map((sandbox) => {
-    const bounds = groupBounds(sandbox)
-    const scale = Math.min(width / bounds.w, maxHeight / bounds.h)
-    return { bounds, scale, w: bounds.w * scale, h: bounds.h * scale }
+  const slotH = draggingWindow() ? width * 0.56 : NEW_SLOT_BUTTON
+  const measure = (fit: number) => {
+    const maxHeight = width * 0.8 * fit
+    const gap = clamp(width * 0.32, 52, 84) * fit
+    const boxes = list.map((sandbox) => {
+      const bounds = groupBounds(sandbox)
+      const scale = Math.min((width * fit) / bounds.w, maxHeight / bounds.h)
+      return { bounds, scale, w: bounds.w * scale, h: bounds.h * scale }
+    })
+    const total = boxes.reduce((sum, box) => sum + box.h + gap, 0) + slotH * Math.max(fit, 0.8)
+    return { boxes, gap, total }
+  }
+  let layout = measure(1)
+  const room = stage().h - 32
+  if (layout.total > room) layout = measure(Math.max(0.45, room / layout.total))
+  let y = (stage().h - layout.total) / 2
+  const rects = new Map<SandboxId, ReturnType<typeof rectFor>>()
+  function rectFor(box: (typeof layout.boxes)[number], top: number) {
+    return { x: THUMB_LEFT, y: top, w: box.w, h: box.h, scale: box.scale, originX: box.bounds.x, originY: box.bounds.y }
+  }
+  list.forEach((id, i) => {
+    const box = layout.boxes[i]
+    rects.set(id, rectFor(box, y))
+    y += box.h + layout.gap
   })
-  const total = boxes.reduce((sum, box) => sum + box.h, 0) + (boxes.length - 1) * gap
-  let y = (stage().h - total) / 2
-  const index = Math.max(0, list.indexOf(id))
-  for (let i = 0; i < index; i++) y += boxes[i].h + gap
-  const box = boxes[index]
-  return { x: THUMB_LEFT, y, w: box.w, h: box.h, scale: box.scale, originX: box.bounds.x, originY: box.bounds.y }
+  const slot = { x: THUMB_LEFT, y, w: draggingWindow() ? width : NEW_SLOT_BUTTON, h: slotH }
+  return { rects, slot }
+}
+
+export function thumbRect(id: SandboxId) {
+  const layout = stripLayout()
+  const rect = layout.rects.get(id)
+  if (rect) return rect
+  const width = thumbWidth()
+  return { x: THUMB_LEFT, y: stage().h / 2, w: width, h: width * 0.6, scale: width / stage().w, originX: stage().left, originY: 0 }
+}
+
+export function newSlotRect() {
+  return stripLayout().slot
 }
 
 export function sandboxOf(id: WindowId) {
-  return SANDBOX_ORDER.find((s) => sandboxes[s].windows.includes(id))!
+  return sandboxOrder().find((s) => sandboxes[s].windows.includes(id))!
 }
 
 export function isOnStage(id: WindowId) {
@@ -266,8 +346,16 @@ export function closeWindow(id: WindowId) {
   setWindows(id, { open: false, minimized: false })
 }
 
+let minimizedCount = 0
+
 export function minimizeWindow(id: WindowId) {
-  setWindows(id, 'minimized', true)
+  setWindows(id, { minimized: true, minimizedAt: ++minimizedCount })
+}
+
+export function minimizedIn(sandbox: SandboxId) {
+  return sandboxes[sandbox].windows
+    .filter((id) => windows[id].open && windows[id].minimized)
+    .sort((a, b) => (windows[a].minimizedAt ?? 0) - (windows[b].minimizedAt ?? 0))
 }
 
 export function setWindowRect(id: WindowId, rect: Partial<Rect>) {
@@ -332,9 +420,7 @@ export function switchSandbox(id: SandboxId) {
   setHoveredSandbox(undefined)
   setPreviousSandbox(activeSandbox())
   setActiveSandbox(id)
-  for (const win of sandboxes[id].windows) {
-    if (windows[win].minimized) setWindows(win, 'minimized', false)
-  }
+  pruneSandboxes()
   clearTimeout(switchTimer)
   switchTimer = setTimeout(() => setSwitching(false), SWITCH_DURATION)
 }

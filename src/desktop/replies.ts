@@ -1,7 +1,7 @@
 import { currentPage, openPage, showBrowser } from '../apps/browser/state'
 import { SITES, titleOf, toUrl } from '../apps/browser/sites'
 import { brainstorm } from '../apps/canvas/state'
-import { focusWindow, switchSandbox, type SandboxId } from './store'
+import { createSandbox, focusWindow, switchSandbox, type SandboxId } from './store'
 
 export interface Reply {
   text: string
@@ -109,8 +109,23 @@ function canvasReply(message: string): Reply | undefined {
   }
 }
 
+function sandboxReply(message: string): Reply | undefined {
+  if (!/\b(new|create|make|spin up|start)\b.*\b(sandbox|desktop|workspace)\b/i.test(message)) return undefined
+  const named = message.match(/\b(?:for|called|named)\s+(?:the\s+)?(.+?)[.!]?$/i)?.[1]
+  const name = named ? named.replace(/^\w/, (c) => c.toUpperCase()) : undefined
+  const kind = /\bagent|research|task\b/i.test(message) || named ? 'agent' : 'local'
+  const id = createSandbox(name, kind)
+  return {
+    text: name
+      ? `Made a new sandbox for “${name}”. Drag windows into it from the strip, or tell me what it should work on.`
+      : 'Made a new empty sandbox. Drag windows into it from the strip, or tell me what it should work on.',
+    sandbox: id,
+    action: () => switchSandbox(id),
+  }
+}
+
 export function replyTo(message: string): Reply {
-  const command = browserCommand(message) ?? pageReply(message) ?? canvasReply(message)
+  const command = browserCommand(message) ?? pageReply(message) ?? canvasReply(message) ?? sandboxReply(message)
   if (command) return command
   const route = ROUTES.find((r) => r.match.test(message))
   if (route) return route.reply

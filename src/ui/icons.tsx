@@ -118,26 +118,10 @@ export const ArrowUp = (p: IconProps) => (
   </Icon>
 )
 
-export const Laptop = (p: IconProps) => (
-  <Icon {...p}>
-    <rect x="4" y="5" width="16" height="11" rx="2" />
-    <path d="M2 19h20" />
-  </Icon>
-)
-
 export const Sparkles = (p: IconProps) => (
   <Icon {...p}>
     <path d="M11 3l1.8 4.7L17.5 9.5l-4.7 1.8L11 16l-1.8-4.7L4.5 9.5l4.7-1.8z" fill="currentColor" stroke="none" />
     <path d="M18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" fill="currentColor" stroke="none" />
-  </Icon>
-)
-
-export const Server = (p: IconProps) => (
-  <Icon {...p}>
-    <rect x="4" y="4" width="16" height="7" rx="2" />
-    <rect x="4" y="13" width="16" height="7" rx="2" />
-    <path d="M8 7.5h.01M8 16.5h.01" stroke-width="2.6" />
-    <path d="M12 7.5h4M12 16.5h4" />
   </Icon>
 )
 

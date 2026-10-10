@@ -27,44 +27,48 @@ function Artwork(props: { track: Track; class?: string }) {
   )
 }
 
-export function MusicPlayer() {
-  const [index, setIndex] = createSignal(0)
-  const [position, setPosition] = createSignal(64)
-  const [scrub, setScrub] = createSignal<number | null>(null)
-  const [playing, setPlaying] = createSignal(false)
-  const [shuffle, setShuffle] = createSignal(false)
-  const [repeat, setRepeat] = createSignal(false)
-  const [volume, setVolume] = createSignal(0.7)
+const [index, setIndex] = createSignal(0)
+const [position, setPosition] = createSignal(64)
+const [scrub, setScrub] = createSignal<number | null>(null)
+const [playing, setPlaying] = createSignal(false)
+const [shuffle, setShuffle] = createSignal(false)
+const [repeat, setRepeat] = createSignal(false)
+const [volume, setVolume] = createSignal(0.7)
 
-  const track = () => TRACKS[index()]
-  const shown = () => scrub() ?? position()
+export const track = () => TRACKS[index()]
+const shown = () => scrub() ?? position()
 
-  function play(i: number) {
-    setIndex(i)
+function play(i: number) {
+  setIndex(i)
+  setPosition(0)
+  setPlaying(true)
+}
+
+export function next() {
+  if (shuffle()) {
+    const others = TRACKS.map((_, i) => i).filter((i) => i !== index())
+    return play(others[Math.floor(Math.random() * others.length)])
+  }
+  const last = index() === TRACKS.length - 1
+  if (last && !repeat()) {
+    setIndex(0)
     setPosition(0)
-    setPlaying(true)
+    setPlaying(false)
+    return
   }
+  play((index() + 1) % TRACKS.length)
+}
 
-  function next() {
-    if (shuffle()) {
-      const others = TRACKS.map((_, i) => i).filter((i) => i !== index())
-      return play(others[Math.floor(Math.random() * others.length)])
-    }
-    const last = index() === TRACKS.length - 1
-    if (last && !repeat()) {
-      setIndex(0)
-      setPosition(0)
-      setPlaying(false)
-      return
-    }
-    play((index() + 1) % TRACKS.length)
-  }
+export function previous() {
+  if (position() > 3) return setPosition(0)
+  play((index() - 1 + TRACKS.length) % TRACKS.length)
+}
 
-  function previous() {
-    if (position() > 3) return setPosition(0)
-    play((index() - 1 + TRACKS.length) % TRACKS.length)
-  }
+export const progress = () => position() / track().duration
 
+export { Artwork, playing, setPlaying }
+
+export function MusicPlayer() {
   const timer = setInterval(() => {
     if (!playing() || scrub() !== null) return
     const nextPosition = position() + TICK / 1000
