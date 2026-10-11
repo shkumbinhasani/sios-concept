@@ -73,7 +73,7 @@ const object = (properties: Record<string, unknown>, required = Object.keys(prop
 const TOOLS = [
   {
     type: 'namespace',
-    name: 'messages',
+    name: 'si_messages',
     description: 'Send messages to the user’s contacts in the Messages app.',
     tools: [
       {
@@ -90,7 +90,7 @@ const TOOLS = [
   },
   {
     type: 'namespace',
-    name: 'browser',
+    name: 'si_browser',
     description: 'The SI OS browser.',
     tools: [
       {
@@ -115,7 +115,7 @@ const TOOLS = [
   },
   {
     type: 'namespace',
-    name: 'os',
+    name: 'si_desktop',
     description: 'Sandboxes, agents and apps in SI OS.',
     tools: [
       {
@@ -161,7 +161,7 @@ The user talks to you from the chat bar at the bottom of the screen. You act on 
 How to answer:
 - Reply in one or two short, plain sentences. No markdown, lists, headings or emoji.
 - When the user asks you to do something you have a tool for, call the tool, then say briefly what you did.
-- When the user asks you to tell, ask or reply to someone, send the message with messages.send_message. Turn requests like "ask Ana if she wants coffee" into a natural text such as "Do you want coffee?".
+- When the user asks you to tell, ask or reply to someone, send the message with si_messages.send_message. Turn requests like "ask Ana if she wants coffee" into a natural text such as "Do you want coffee?".
 - Hand coding, testing and deploying to the build agent, and reading or research to the research agent.
 - If something fails, say so plainly.
 
@@ -289,7 +289,7 @@ export async function think(prompt: string): Promise<Reply> {
       for (const item of calls) {
         let result: unknown
         try {
-          result = run(String(item.name), JSON.parse(String(item.arguments || '{}')), reply)
+          result = run(String(item.name).split(".").pop()!, JSON.parse(String(item.arguments || '{}')), reply)
         } catch (e) {
           result = { error: e instanceof Error ? e.message : 'Tool failed.' }
         }
