@@ -275,3 +275,13 @@
     scale: 1.04;
   }
 }
+
+.isl-steps li.is-waiting {
+  color: #ffc46b;
+  font-weight: 600;
+}
+
+.isl-steps li.is-waiting .isl-check {
+  border-color: #ff9f0a;
+  background: radial-gradient(circle, #ff9f0a 0 3px, transparent 3.5px);
+}

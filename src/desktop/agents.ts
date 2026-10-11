@@ -199,7 +199,7 @@ function stepTo(id: SandboxId, step: number, line: string) {
 
 function ask(id: SandboxId, question: string, actions: AgentAction[]) {
   setAgents(id, { state: 'waiting', question, actions, line: question, progress: 1 })
-  setSandboxStatus(id, 'waiting', question)
+  setSandboxStatus(id, 'waiting', 'Waiting for your decision')
   post({ agent: id, text: question, actions })
 }
 

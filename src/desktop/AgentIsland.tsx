@@ -29,7 +29,7 @@ export function AgentIsland() {
               </Show>
             </span>
             <span class="isl-name">{a().name}</span>
-            <span class="isl-line">{state() === 'paused' ? `Paused · ${a().line}` : a().line}</span>
+            <span class="isl-line">{state() === 'paused' ? `Paused · ${a().line}` : waiting() ? 'Needs your decision' : a().line}</span>
             <Show when={state() === 'working'}>
               <span class="isl-dots">
                 <i />
@@ -60,7 +60,8 @@ export function AgentIsland() {
                     <li
                       classList={{
                         'is-done': i() < a().step || state() === 'done',
-                        'is-current': i() === a().step && state() !== 'done' && state() !== 'idle',
+                        'is-current': i() === a().step && state() !== 'done' && state() !== 'idle' && !waiting(),
+                        'is-waiting': i() === a().step && waiting(),
                       }}
                     >
                       <span class="isl-check" />
