@@ -1,6 +1,6 @@
 .win {
   --titlebar-height: 52px;
-  --win-radius: 14px;
+  --win-radius: 26px;
   --win-bg: #1e1e20;
   position: absolute;
   top: 0;
@@ -132,7 +132,7 @@
 
 .win-lights-floating {
   top: 8px;
-  left: 10px;
+  left: 8px;
   translate: none;
   z-index: 5;
   align-items: center;
@@ -283,7 +283,7 @@ body.is-interacting iframe {
 }
 
 .win.is-fullscreen .win-lights-floating {
-  left: calc(var(--safe-left) + 10px);
+  left: calc(var(--safe-left) + 8px);
   top: calc(var(--safe-top) + 8px);
 }
 

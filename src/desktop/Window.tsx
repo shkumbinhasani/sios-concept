@@ -35,6 +35,7 @@ import './Window.css'
 type Edge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
 
 const EDGES: Edge[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']
+const WIN_RADIUS = 26
 const INTERACTIVE = 'button, input, a, select, textarea, [data-no-drag]'
 
 interface WindowProps {
@@ -73,7 +74,7 @@ export function Window(props: WindowProps) {
   let frame!: HTMLDivElement
 
   const EASE = 'cubic-bezier(0.25, 0.9, 0.2, 1)'
-  const radiusFor = () => (win().fullscreen || win().maximized ? 0 : 14)
+  const radiusFor = () => (win().fullscreen || win().maximized ? 0 : WIN_RADIUS)
   const inset = (outer: DOMRect, inner: { left: number; top: number; right: number; bottom: number }, r: number) =>
     `inset(${inner.top - outer.top}px ${outer.right - inner.right}px ${outer.bottom - inner.bottom}px ${inner.left - outer.left}px round ${r}px)`
 
@@ -84,7 +85,7 @@ export function Window(props: WindowProps) {
     if (target) {
       const box = { left: target.x, top: target.y, right: target.x + target.w, bottom: target.y + target.h }
       const motion = frame.animate(
-        [{ clipPath: inset(from, from, radiusFor()) }, { clipPath: inset(from, box, 14) }],
+        [{ clipPath: inset(from, from, radiusFor()) }, { clipPath: inset(from, box, WIN_RADIUS) }],
         { duration: 340, easing: EASE, fill: 'forwards' },
       )
       motion.onfinish = () => {
@@ -96,7 +97,7 @@ export function Window(props: WindowProps) {
     }
     change()
     const to = section.getBoundingClientRect()
-    const motion = frame.animate([{ clipPath: inset(to, from, 14) }, { clipPath: inset(to, to, radiusFor()) }], {
+    const motion = frame.animate([{ clipPath: inset(to, from, WIN_RADIUS) }, { clipPath: inset(to, to, radiusFor()) }], {
       duration: 380,
       easing: EASE,
     })
@@ -114,9 +115,9 @@ export function Window(props: WindowProps) {
       [
         {
           transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`,
-          clipPath: 'inset(0 round 14px)',
+          clipPath: `inset(0 round ${WIN_RADIUS}px)`,
         },
-        { transform: 'none', clipPath: `inset(0 round ${win().fullscreen || win().maximized ? 0 : 14}px)` },
+        { transform: 'none', clipPath: `inset(0 round ${win().fullscreen || win().maximized ? 0 : WIN_RADIUS}px)` },
       ],
       { duration: 380, easing: 'cubic-bezier(0.25, 0.9, 0.2, 1)' },
     )
@@ -137,7 +138,7 @@ export function Window(props: WindowProps) {
       frame.style.transformOrigin = '0 0'
       const motion = frame.animate(
         [
-          { transform: 'none', opacity: 1, clipPath: 'inset(0 round 14px)' },
+          { transform: 'none', opacity: 1, clipPath: `inset(0 round ${WIN_RADIUS}px)` },
           { transform: rectTransform(pill, from), opacity: 0.2, clipPath: `inset(0 round ${(pill.height / 2) * (from.height / pill.height)}px)` },
         ],
         { duration: 420, easing: 'cubic-bezier(0.5, 0, 0.2, 1)', fill: 'forwards' },
