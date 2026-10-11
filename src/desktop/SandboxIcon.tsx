@@ -2,7 +2,7 @@ import { createUniqueId, Match, Show, Switch } from 'solid-js'
 import { sandboxes, type SandboxId } from './store'
 import './SandboxIcon.css'
 
-function squircle(size = 64, inset = 2, exponent = 5, steps = 96) {
+function squircle(size = 64, inset = 0.5, exponent = 5, steps = 128) {
   const r = size / 2 - inset
   const c = size / 2
   const points: string[] = []
@@ -160,7 +160,7 @@ export function SandboxIcon(props: { id: SandboxId; size?: number; status?: bool
   const status = () => sandboxes[props.id]?.status ?? 'idle'
 
   return (
-    <span class="sbx-icon" style={{ width: `${size()}px`, height: `${size()}px` }}>
+    <span class="sbx-icon" classList={{ 'is-small': size() < 30 }} style={{ width: `${size()}px`, height: `${size()}px` }}>
       <svg viewBox="0 0 64 64" width={size()} height={size()} aria-hidden="true">
         <defs>
           <filter id={`${uid}-drop`} x="-20%" y="-20%" width="140%" height="150%">
@@ -170,6 +170,11 @@ export function SandboxIcon(props: { id: SandboxId; size?: number; status?: bool
             <stop offset="0" stop-color="#fff" stop-opacity="0.35" />
             <stop offset="0.45" stop-color="#fff" stop-opacity="0.04" />
             <stop offset="1" stop-color="#fff" stop-opacity="0" />
+          </linearGradient>
+          <linearGradient id={`${uid}-edge`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity="0.45" />
+            <stop offset="0.5" stop-color="#fff" stop-opacity="0.08" />
+            <stop offset="1" stop-color="#fff" stop-opacity="0.18" />
           </linearGradient>
           <clipPath id={`${uid}-clip`}>
             <path d={SHAPE} />
@@ -192,9 +197,8 @@ export function SandboxIcon(props: { id: SandboxId; size?: number; status?: bool
             </Match>
           </Switch>
           <path d={SHAPE} fill={`url(#${uid}-gloss)`} />
+          <path d={SHAPE} fill="none" stroke={`url(#${uid}-edge)`} stroke-width={size() < 30 ? 2.4 : 1.6} />
         </g>
-        <path d={SHAPE} fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.8" />
-        <path d={SHAPE} fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.5" transform="translate(0 0.4)" opacity="0.6" />
       </svg>
       <Show when={props.status !== false && status() !== 'idle'}>
         <span class={`sbx-badge is-${status()}`}>
