@@ -5,6 +5,7 @@ import { Monitor } from './apps/monitor/Monitor'
 import { Messages } from './apps/messages/Messages'
 import { MusicPlayer } from './apps/music/MusicPlayer'
 import { Notes } from './apps/notes/Notes'
+import { Simulator } from './apps/simulator/Simulator'
 import { Terminal } from './apps/terminal/Terminal'
 import { ChatBar } from './desktop/ChatBar'
 import { StageStrip } from './desktop/StageStrip'
@@ -33,6 +34,7 @@ function App() {
       <Notes />
       <Terminal />
       <Monitor />
+      <Simulator />
       <StageStrip />
       <ChatBar />
     </main>

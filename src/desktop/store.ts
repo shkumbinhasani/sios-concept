@@ -1,7 +1,7 @@
 import { createMemo, createRoot, createSignal } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
 
-export type WindowId = 'browser' | 'music' | 'messages' | 'notes' | 'canvas' | 'terminal' | 'monitor'
+export type WindowId = 'browser' | 'music' | 'messages' | 'notes' | 'canvas' | 'terminal' | 'monitor' | 'simulator'
 export type SandboxId = string
 export type SandboxKind = 'local' | 'agent' | 'remote'
 export type SandboxStatus = 'idle' | 'working' | 'waiting'
@@ -88,7 +88,10 @@ function defaultLayout(): Record<WindowId, Rect> {
   const monitorW = clamp(sw * 0.24, 340, 440)
   const monitorH = clamp(sh * 0.42, 300, 420)
   const buildW = terminalW + monitorW - 80
-  const buildX = left + (sw - buildW) / 2
+  const simH = clamp(sh * 0.9, 480, 960)
+  const simW = clamp(simH * 0.62, 420, 620)
+  const buildX = left + Math.max(16, (sw - (buildW + 24 + simW)) / 2)
+  const simX = Math.min(buildX + buildW + 24, left + sw - simW - 16)
   const buildY = (sh - terminalH) / 2
 
   return {
@@ -103,6 +106,7 @@ function defaultLayout(): Record<WindowId, Rect> {
     canvas: { x: researchX + notesW - 120, y: (sh - canvasH) / 2, w: canvasW, h: canvasH },
     notes: { x: researchX, y: (sh - notesH) / 2 + 36, w: notesW, h: notesH },
     terminal: { x: buildX, y: buildY, w: terminalW, h: terminalH },
+    simulator: { x: simX, y: (sh - simH) / 2, w: simW, h: simH },
     monitor: { x: buildX + terminalW - 80, y: buildY + terminalH * 0.28, w: monitorW, h: monitorH },
   }
 }
@@ -116,6 +120,7 @@ const [windows, setWindows] = createStore<Record<WindowId, WindowState>>({
   canvas: place(initial.canvas, 4),
   terminal: place(initial.terminal, 5),
   monitor: place(initial.monitor, 6),
+  simulator: place(initial.simulator, 8),
 })
 
 let lastStage = stage()
@@ -179,7 +184,7 @@ const [sandboxes, setSandboxes] = createStore<Record<SandboxId, Sandbox>>({
     host: 'build-01.si',
     status: 'idle',
     activity: 'Last build passed',
-    windows: ['terminal', 'monitor'],
+    windows: ['terminal', 'monitor', 'simulator'],
   },
 })
 
@@ -216,7 +221,7 @@ const [switching, setSwitching] = createSignal(false)
 const [dropTarget, setDropTarget] = createSignal<SandboxId>()
 const [previousSandbox, setPreviousSandbox] = createSignal<SandboxId>()
 
-let topZ = 7
+let topZ = 8
 
 export { dropTarget, setDropTarget }
 

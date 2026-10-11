@@ -275,3 +275,13 @@
   background: #fff;
   color: #0b0b12;
 }
+
+.msg-open-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #5af08a, #13b34e);
+  color: #fff;
+}

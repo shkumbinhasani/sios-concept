@@ -1,13 +1,15 @@
 import { currentPage, openPage, showBrowser } from '../apps/browser/state'
 import { SITES, titleOf, toUrl } from '../apps/browser/sites'
 import { brainstorm } from '../apps/canvas/state'
-import { createSandbox, focusWindow, switchSandbox, type SandboxId } from './store'
+import { compose, findChat, openChat, sendFromSI } from '../apps/messages/state'
+import { createSandbox, focusWindow, openWindow, sandboxOf, switchSandbox, type SandboxId } from './store'
 
 export interface Reply {
   text: string
   sandbox?: SandboxId
   task?: string
   action?: () => void
+  open?: { label: string; run: () => void }
 }
 
 const searchUrl = (query: string) => `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(query)}`
@@ -124,8 +126,41 @@ function sandboxReply(message: string): Reply | undefined {
   }
 }
 
+const NAME = String.raw`(the team|the group|everyone|team|group|[\p{L}]+)`
+const MESSAGE_PATTERNS: { kind: 'tell' | 'ask'; re: RegExp }[] = [
+  { kind: 'tell', re: new RegExp(String.raw`^(?:please\s+)?let\s+${NAME}\s+know\s+(?:that\s+)?(.+)$`, 'iu') },
+  { kind: 'ask', re: new RegExp(String.raw`^(?:please\s+)?ask\s+${NAME}\s+(.+)$`, 'iu') },
+  { kind: 'tell', re: new RegExp(String.raw`^(?:please\s+)?(?:reply|answer|respond)\s+to\s+${NAME}\s+(?:with\s+|saying\s+|that\s+)?(.+)$`, 'iu') },
+  { kind: 'tell', re: new RegExp(String.raw`^(?:please\s+)?(?:tell|text|message|msg|send)\s+${NAME}\s+(?:a message\s+)?(?:that\s+)?(.+)$`, 'iu') },
+]
+
+function showChat(id: string) {
+  switchSandbox(sandboxOf('messages'))
+  openWindow('messages')
+  focusWindow('messages')
+  openChat(id)
+}
+
+function messageReply(message: string): Reply | undefined {
+  const text = message.trim()
+  for (const { kind, re } of MESSAGE_PATTERNS) {
+    const match = text.match(re)
+    if (!match) continue
+    const chat = findChat(match[1])
+    if (!chat) return { text: `I couldn't find “${match[1]}” in Messages. Who should I send it to?` }
+    const body = compose(kind, match[2])
+    const who = chat.group ? chat.name : chat.name.split(' ')[0]
+    return {
+      text: `Sent to ${who}: “${body}”`,
+      action: () => sendFromSI(chat, body),
+      open: { label: `Open chat with ${who}`, run: () => showChat(chat.id) },
+    }
+  }
+  return undefined
+}
+
 export function replyTo(message: string): Reply {
-  const command = browserCommand(message) ?? pageReply(message) ?? canvasReply(message) ?? sandboxReply(message)
+  const command = messageReply(message) ?? browserCommand(message) ?? pageReply(message) ?? canvasReply(message) ?? sandboxReply(message)
   if (command) return command
   const route = ROUTES.find((r) => r.match.test(message))
   if (route) return route.reply

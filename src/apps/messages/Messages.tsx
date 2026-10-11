@@ -9,7 +9,6 @@ import {
   chatById,
   contacts,
   dismissCatchUp,
-  draftFor,
   ME,
   messages,
   messagesIn,
@@ -22,7 +21,6 @@ import {
   setVisible,
   sortedChats,
   startIncoming,
-  SUGGESTIONS,
   toggleVoice,
   voiceProgress,
   type Chat,
@@ -192,15 +190,25 @@ function Bubble(props: { message: Message; first: boolean; last: boolean; group:
           </button>
         </div>
       </div>
-      <Show when={props.readLine}>
-        <span class="ix-read">{props.readLine}</span>
+      <Show when={props.message.via === 'si' || props.readLine}>
+        <span class="ix-read">
+          <Show when={props.message.via === 'si'}>
+            <span class="ix-via">
+              <Sparkles width="10" height="10" />
+              Sent by SI
+            </span>
+          </Show>
+          <Show when={props.message.via === 'si' && props.readLine}> · </Show>
+          {props.readLine}
+        </span>
       </Show>
     </div>
   )
 }
 
 export function Messages() {
-  const [drafting, setDrafting] = createSignal(false)
+  const [writingOpen, setWritingOpen] = createSignal(false)
+  const writing = () => writingOpen() || !!chat().draft.trim() || !!chat().replyTo
   let scroller!: HTMLDivElement
   let input!: HTMLTextAreaElement
 
@@ -251,22 +259,7 @@ export function Messages() {
     queueMicrotask(fit)
   }
 
-  function draftWithSI() {
-    const full = draftFor(activeChat())
-    if (!full || drafting()) return
-    setDrafting(true)
-    const words = full.split(' ')
-    let i = 0
-    const tick = () => {
-      i++
-      setDraft(words.slice(0, i).join(' '))
-      fit()
-      if (i < words.length) setTimeout(tick, 35)
-      else setDrafting(false)
-    }
-    setDraft('')
-    tick()
-  }
+
 
   return (
     <Window id="messages" title="Messages" class="ix" frameless>
@@ -357,33 +350,34 @@ export function Messages() {
         <Rail />
 
         <div class="ix-bottom">
-          <Show when={!chat().draft.trim() && !drafting()}>
-            <div class="ix-suggest">
-              <For each={SUGGESTIONS[chat().id] ?? []}>
-                {(text) => (
-                  <button
-                    class="ix-suggestion glass-pill"
-                    onClick={() => {
-                      setDraft(text)
-                      queueMicrotask(() => {
-                        fit()
-                        input.focus()
-                      })
-                    }}
-                  >
-                    {text}
-                  </button>
-                )}
-              </For>
-              <button class="ix-suggestion ix-draft glass-pill" onClick={draftWithSI}>
-                <Sparkles width="12" height="12" />
-                Draft with SI
-              </button>
-            </div>
-          </Show>
 
+          <Show
+            when={writing()}
+            fallback={
+              <div class="ix-idle">
+                <button
+                  class="ix-write glass-pill"
+                  onClick={() => {
+                    setWritingOpen(true)
+                    queueMicrotask(() => input?.focus())
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4" />
+                  </svg>
+                  Write it yourself
+                </button>
+                <span class="ix-hint">
+                  or tell SI: “tell {chat().group ? 'the team' : firstName(chat().members[0])} …”
+                </span>
+              </div>
+            }
+          >
           <form
             class="ix-compose glass-pill"
+            onFocusOut={(e) => {
+              if (!chat().draft.trim() && !chat().replyTo && !e.currentTarget.contains(e.relatedTarget as Node)) setWritingOpen(false)
+            }}
             onSubmit={(e) => {
               e.preventDefault()
               submit()
@@ -410,7 +404,7 @@ export function Messages() {
                 rows={1}
                 placeholder={chat().group ? `Message ${chat().name}` : `Message ${firstName(chat().members[0])}`}
                 value={chat().draft}
-                classList={{ 'is-drafting': drafting() }}
+               
                 onInput={(e) => {
                   setDraft(e.currentTarget.value)
                   fit()
@@ -435,6 +429,7 @@ export function Messages() {
               </button>
             </div>
           </form>
+          </Show>
         </div>
       </div>
     </Window>

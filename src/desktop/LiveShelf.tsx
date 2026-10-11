@@ -3,6 +3,7 @@ import { activeTab, pageTitle, urlOf } from '../apps/browser/state'
 import { faviconOf } from '../apps/browser/sites'
 import { agentCursor, items } from '../apps/canvas/state'
 import { chats, contacts as people, lastIn, ME, totalUnread } from '../apps/messages/state'
+import { appById, device, openApp as phoneApp } from '../apps/simulator/state'
 import { Artwork, next, playing, progress, setPlaying, track } from '../apps/music/MusicPlayer'
 import { Next, Pause, Play } from '../ui/icons'
 import { buildLoad, terminal } from './agents'
@@ -27,6 +28,10 @@ const ICONS: Record<WindowId, { color: string; glyph: JSX.Element }> = {
   notes: { color: 'linear-gradient(180deg, #c86bff, #6a2bff)', glyph: <path d="M7 4h7l4 4v12H7zM14 4v4h4" /> },
   canvas: { color: 'linear-gradient(180deg, #ffd34d, #ff8a00)', glyph: <path d="M4 4h16v11l-5 5H4z" /> },
   terminal: { color: 'linear-gradient(180deg, #3a3a44, #16161c)', glyph: <path d="M5 8l4 4-4 4M12 16h7" /> },
+  simulator: {
+    color: 'linear-gradient(180deg, #6b7cff, #3a3fd6)',
+    glyph: <path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM11 18h2" />,
+  },
   monitor: { color: 'linear-gradient(180deg, #4ce38a, #0e9f6e)', glyph: <path d="M4 18V9M9 18V5M14 18v-6M19 18v-9" /> },
 }
 
@@ -117,6 +122,10 @@ function Content(props: { id: WindowId }) {
         <Show when={sandboxes.build.status === 'working'}>
           <span class="live-spinner" />
         </Show>
+      </Match>
+      <Match when={props.id === 'simulator'}>
+        <AppIcon id="simulator" />
+        <Text title="Simulator" detail={`${device().name} · ${appById(phoneApp())?.name ?? 'Home'}`} />
       </Match>
       <Match when={props.id === 'monitor'}>
         <AppIcon id="monitor" />

@@ -22,6 +22,7 @@ interface Message {
   text: string
   pending: boolean
   sandbox?: SandboxId
+  open?: { label: string; run: () => void }
 }
 
 let ids = 0
@@ -86,7 +87,7 @@ export function ChatBar() {
     const bubble = bubbles.get(id)
     const from = bubble?.getBoundingClientRect()
     const shift = slide(() =>
-      setMessages((m) => m.id === id, { text: reply.text, pending: false, sandbox: reply.sandbox }),
+      setMessages((m) => m.id === id, { text: reply.text, pending: false, sandbox: reply.sandbox, open: reply.open }),
     )
     if (!bubble || !from) return
 
@@ -175,6 +176,18 @@ export function ChatBar() {
                               <SandboxIcon id={id()} size={18} status={false} />
                               <span class="msg-chip-name">{sandboxes[id()].name}</span>
                               <span class="msg-chip-activity">{sandboxes[id()].activity}</span>
+                            </button>
+                          )}
+                        </Show>
+                        <Show when={message.open}>
+                          {(open) => (
+                            <button class="msg-chip msg-open" onClick={() => open().run()}>
+                              <span class="msg-open-icon">
+                                <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor">
+                                  <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z" />
+                                </svg>
+                              </span>
+                              <span class="msg-chip-name">{open().label}</span>
                             </button>
                           )}
                         </Show>

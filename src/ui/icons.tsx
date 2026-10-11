@@ -125,3 +125,10 @@ export const Sparkles = (p: IconProps) => (
   </Icon>
 )
 
+
+export const Search = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </Icon>
+)

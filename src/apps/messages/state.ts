@@ -23,6 +23,7 @@ export interface Message {
   replyTo?: number
   reaction?: string
   link?: { label: string; sandbox: string }
+  via?: 'si'
 }
 
 export interface Chat {
@@ -120,21 +121,7 @@ const SUMMARIES: Record<string, string> = {
   leo: 'Leo sent a quick message.',
 }
 
-export const SUGGESTIONS: Record<string, string[]> = {
-  ana: ['10am works 👍', 'Can we do 11 instead?'],
-  team: ['I will bring coffee ☕️', 'Not it either 😅'],
-  mei: ['Yes, I will be there!', 'What time?'],
-  leo: ['Thanks!', 'Looking forward to it'],
-}
 
-const DRAFTS: Record<string, string> = {
-  ana: 'Yes, let us talk tomorrow at 10. I listened to your voice note, and I think the launch plan is in good shape. Let us go through the open questions first.',
-  team: 'I can bring coffee tomorrow. Oat milk for Mei, black for Tomás, and the usual for Leo?',
-  mei: 'Yes, I will be at the demo! Can you save me a seat near the front?',
-  leo: 'Thanks for the slides, Leo. I will review them tonight and send notes in the morning.',
-}
-
-export const draftFor = (id: string) => DRAFTS[id] ?? ''
 
 export function openChat(id: string) {
   const chat = chats.find((c) => c.id === id)
@@ -202,13 +189,12 @@ function deliver(chatId: string, part: Partial<Message> & { from: string }) {
 const [visible, setVisible] = createSignal(false)
 export { setVisible }
 
-export function send(text: string) {
-  const chatId = activeChat()
+export function send(text: string, chatId = activeChat(), via?: 'si') {
   const body = text.trim()
   if (!body) return
   const id = ++ids
-  const replyTo = chatById(chatId).replyTo
-  setMessages(messages.length, { id, chat: chatId, from: ME, text: body, at: Date.now(), receipt: 'sent', replyTo })
+  const replyTo = via ? undefined : chatById(chatId).replyTo
+  setMessages(messages.length, { id, chat: chatId, from: ME, text: body, at: Date.now(), receipt: 'sent', replyTo, via })
   setChats((c) => c.id === chatId, { draft: '', replyTo: undefined, catchUp: undefined })
 
   const chat = chatById(chatId)
@@ -241,4 +227,49 @@ export function startIncoming() {
 
 export function updateMessage(id: number, fn: (m: Message) => void) {
   setMessages((x) => x.id === id, produce(fn))
+}
+
+const GROUP_WORDS = /^(the\s+)?(team|group|everyone|all|si os team)$/i
+
+export function findChat(name: string): Chat | undefined {
+  const target = name.trim().toLowerCase()
+  if (!target) return undefined
+  if (['her', 'him', 'them', 'they'].includes(target)) return chatById(activeChat())
+  if (GROUP_WORDS.test(target)) return chats.find((c) => c.group)
+  return chats.find((c) => {
+    const words = c.name.toLowerCase().split(' ')
+    return c.name.toLowerCase() === target || words.includes(target) || words[0].startsWith(target)
+  })
+}
+
+function sentence(text: string) {
+  let t = text.trim().replace(/^(that|to say|saying)\s+/i, '')
+  if (!t) return t
+  t = t[0].toUpperCase() + t.slice(1)
+  return /[.!?…)\p{Extended_Pictographic}]$/u.test(t) ? t : `${t}.`
+}
+
+function question(text: string) {
+  let t = text.trim().replace(/^(if|whether)\s+/i, '')
+  const swaps: [RegExp, string][] = [
+    [/^(?:she|he|they)'?(?:s|re)\b|^(?:she|he|they) (?:is|are)\b/i, 'are you'],
+    [/^(?:she|he|they) (can|will|could|would|should)\b/i, '$1 you'],
+    [/^(?:she|he|they) (?:has|have) (?=\w+ed\b|been\b|got\b|seen\b|done\b)/i, 'have you '],
+    [/^(?:she|he|they) (\w+?)(?:es|s)?\b/i, 'do you $1'],
+  ]
+  const wh = t.match(/^(when|where|what|why|how|who|which)\s+(.+?)\s+(is|are|was|were)\b\s*(.*)$/i)
+  if (wh) t = `${wh[1]} ${wh[3]} ${wh[2]}${wh[4] ? ` ${wh[4]}` : ''}`
+  else for (const [re, to] of swaps) t = t.replace(re, to)
+  t = t.replace(/^do you (wan|nee|lik|ha)\b/i, (_match: string, stem: string) => `do you ${{ wan: 'want', nee: 'need', lik: 'like', ha: 'have' }[stem.toLowerCase() as 'wan']}`)
+  t = t.replace(/\b(her|him|them)\b/gi, 'you').replace(/\b(she|he|they)\b/gi, 'you')
+  t = t[0].toUpperCase() + t.slice(1)
+  return /[?!]$/.test(t) ? t : `${t.replace(/[.]$/, '')}?`
+}
+
+export function compose(kind: 'tell' | 'ask', body: string) {
+  return kind === 'ask' ? question(body) : sentence(body)
+}
+
+export function sendFromSI(chat: Chat, text: string) {
+  send(text, chat.id, 'si')
 }
