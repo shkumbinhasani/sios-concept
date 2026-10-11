@@ -2,7 +2,7 @@ import { createSignal, For, onCleanup, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { ArrowUp, Mic, Plus } from '../ui/icons'
 import { ProgressiveBlur } from '../ui/ProgressiveBlur'
-import { delegate } from './agents'
+import { agents, delegate, onAgentPost, type AgentAction } from './agents'
 import { replyTo, type Reply } from './replies'
 import { LiveShelf } from './LiveShelf'
 import { SandboxIcon } from './SandboxIcon'
@@ -18,7 +18,10 @@ const SLIDE_EASING = 'cubic-bezier(0.2, 0.9, 0.25, 1)'
 
 interface Message {
   id: number
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'agent'
+  agent?: SandboxId
+  actions?: AgentAction[]
+  chosen?: string
   text: string
   pending: boolean
   sandbox?: SandboxId
@@ -80,6 +83,21 @@ export function ChatBar() {
     input.select()
   }
   onCleanup(() => (focusInput = undefined))
+
+  const stopPosts = onAgentPost((post) => {
+    setClearing(false)
+    slide(() =>
+      setMessages(messages.length, {
+        id: ++ids,
+        role: 'agent',
+        agent: post.agent,
+        text: post.text,
+        pending: false,
+        actions: post.actions,
+      }),
+    )
+  })
+  onCleanup(stopPosts)
 
   function fill(id: number, reply: Reply) {
     reply.action?.()
@@ -152,7 +170,15 @@ export function ChatBar() {
           <div ref={track} class="chat-track">
             <For each={messages}>
               {(message) => (
-                <div class={`msg msg-${message.role}`}>
+                <div class={`msg msg-${message.role === 'agent' ? 'assistant msg-agent' : message.role}`}>
+                  <Show when={message.role === 'agent' && message.agent}>
+                    {(id) => (
+                      <span class="msg-agent-name" style={{ color: agents[id()]?.colors[0] }}>
+                        <SandboxIcon id={id()} size={16} status={false} />
+                        {agents[id()]?.name ?? sandboxes[id()]?.name}
+                      </span>
+                    )}
+                  </Show>
                   <div
                     ref={(el) => bubbles.set(message.id, el)}
                     class="msg-bubble"
@@ -178,6 +204,28 @@ export function ChatBar() {
                               <span class="msg-chip-activity">{sandboxes[id()].activity}</span>
                             </button>
                           )}
+                        </Show>
+                        <Show when={message.actions?.length}>
+                          <span class="msg-actions">
+                            <Show
+                              when={!message.chosen}
+                              fallback={<span class="msg-chosen">{message.chosen}</span>}
+                            >
+                              <For each={message.actions}>
+                                {(action) => (
+                                  <button
+                                    classList={{ 'is-primary': !!action.primary }}
+                                    onClick={() => {
+                                      setMessages((m) => m.id === message.id, 'chosen', action.label)
+                                      action.run()
+                                    }}
+                                  >
+                                    {action.label}
+                                  </button>
+                                )}
+                              </For>
+                            </Show>
+                          </span>
                         </Show>
                         <Show when={message.open}>
                           {(open) => (

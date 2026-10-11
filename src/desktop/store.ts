@@ -395,8 +395,11 @@ export function toggleMaximize(id: WindowId) {
   )
 }
 
+export const AGENT_SANDBOXES = ['research', 'build']
+
 export function safeArea(): Insets {
-  return { top: 0, right: 0, bottom: BOTTOM_SPACE, left: stage().left }
+  const top = AGENT_SANDBOXES.includes(activeSandbox()) ? 52 : 0
+  return { top, right: 0, bottom: BOTTOM_SPACE, left: stage().left }
 }
 
 export function toggleFullscreen(id: WindowId) {

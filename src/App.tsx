@@ -7,6 +7,7 @@ import { MusicPlayer } from './apps/music/MusicPlayer'
 import { Notes } from './apps/notes/Notes'
 import { Simulator } from './apps/simulator/Simulator'
 import { Terminal } from './apps/terminal/Terminal'
+import { AgentIsland } from './desktop/AgentIsland'
 import { ChatBar } from './desktop/ChatBar'
 import { StageStrip } from './desktop/StageStrip'
 import { focusWindow, type WindowId } from './desktop/store'
@@ -36,6 +37,7 @@ function App() {
       <Monitor />
       <Simulator />
       <StageStrip />
+      <AgentIsland />
       <ChatBar />
     </main>
   )
