@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: center;
   height: var(--md-top);
-  padding: 0 calc(max(var(--safe-left), var(--safe-right)) + 10px);
+  padding: 0 calc(max(var(--safe-left), var(--safe-right)) + 8px);
 }
 
 .md-round {
@@ -73,7 +73,7 @@
 
 .md-switch {
   position: absolute;
-  right: calc(var(--safe-right) + 10px);
+  right: calc(var(--safe-right) + 8px);
   display: flex;
   height: 36px;
   padding: 4px;

@@ -245,7 +245,7 @@
 .cv-zoom {
   position: absolute;
   top: calc(var(--safe-top) + 8px);
-  right: calc(var(--safe-right) + 10px);
+  right: calc(var(--safe-right) + 8px);
   z-index: 5;
   display: flex;
   align-items: center;
