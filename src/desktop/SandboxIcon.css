@@ -9,6 +9,10 @@
   display: block;
 }
 
+.sbx-icon.is-small {
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+}
+
 .sbx-badge {
   position: absolute;
   top: -4px;
