@@ -276,6 +276,10 @@
   color: #0b0b12;
 }
 
+.msg-open-icon.is-mail {
+  background: linear-gradient(180deg, #4fb4ff, #0a6cff);
+}
+
 .msg-open-icon {
   display: grid;
   place-items: center;

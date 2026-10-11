@@ -3,8 +3,9 @@ import { currentPage, showBrowser, openPage } from '../apps/browser/state'
 import { SITES, toUrl } from '../apps/browser/sites'
 import { brainstorm } from '../apps/canvas/state'
 import { chats, findChat, sendFromSI } from '../apps/messages/state'
+import { archive, findPerson, findThread, reply as replyMail, send as sendMail, senderOf, setDraft, threads } from '../apps/mail/state'
 import { delegate } from './agents'
-import { browse, searchUrl, showChat, type Reply } from './replies'
+import { browse, searchUrl, showChat, showMail, type Reply } from './replies'
 import {
   activeSandbox,
   createSandbox,
@@ -30,7 +31,7 @@ type Item = Record<string, unknown> & { type?: string }
 const MAX_ROUNDS = 5
 const MAX_TURNS = 10
 const USAGE_URL = 'https://chatgpt.com/settings/usage'
-const APPS: WindowId[] = ['browser', 'music', 'messages', 'notes', 'canvas', 'terminal', 'monitor', 'simulator']
+const APPS: WindowId[] = ['browser', 'music', 'messages', 'notes', 'canvas', 'terminal', 'monitor', 'simulator', 'mail']
 
 const [session, setSession] = createSignal<Session>({ available: false, signedIn: false, sharing: false })
 export { session }
@@ -85,6 +86,54 @@ const TOOLS = [
           to: { type: 'string', description: 'Contact first name or group name, e.g. "Ana" or "team".' },
           text: { type: 'string', description: 'The exact message to send.' },
         }),
+      },
+    ],
+  },
+  {
+    type: 'namespace',
+    name: 'si_mail',
+    description: 'The user’s email in the Mail app. SI already sorted the inbox and wrote a summary of each thread.',
+    tools: [
+      {
+        type: 'function',
+        name: 'list_inbox',
+        description: 'List email threads with their id, sender, subject, summary, section and whether a reply draft exists.',
+        parameters: object({}),
+      },
+      {
+        type: 'function',
+        name: 'read_email',
+        description: 'Read every message in a thread.',
+        parameters: object({ thread: { type: 'string', description: 'Thread id, or the sender’s first name.' } }),
+      },
+      {
+        type: 'function',
+        name: 'reply_email',
+        description: 'Send a reply in a thread right away, written in the user’s voice and signed "Shkumbin".',
+        parameters: object({ thread: { type: 'string' }, text: { type: 'string' } }),
+      },
+      {
+        type: 'function',
+        name: 'draft_reply',
+        description:
+          'Write or replace the reply draft for a thread without sending it, and show it to the user in Mail. Use this when the user wants to review first or asks to change a draft.',
+        parameters: object({ thread: { type: 'string' }, text: { type: 'string' } }),
+      },
+      {
+        type: 'function',
+        name: 'send_email',
+        description: 'Send a new email, written in the user’s voice and signed "Shkumbin".',
+        parameters: object({
+          to: { type: 'string', description: 'A first name of a known contact, or an email address.' },
+          subject: { type: 'string' },
+          text: { type: 'string' },
+        }),
+      },
+      {
+        type: 'function',
+        name: 'archive_email',
+        description: 'Archive a thread.',
+        parameters: object({ thread: { type: 'string' } }),
       },
     ],
   },
@@ -162,6 +211,7 @@ How to answer:
 - Reply in one or two short, plain sentences. No markdown, lists, headings or emoji.
 - When the user asks you to do something you have a tool for, call the tool, then say briefly what you did.
 - When the user asks you to tell, ask or reply to someone, send the message with si_messages.send_message. Turn requests like "ask Ana if she wants coffee" into a natural text such as "Do you want coffee?".
+- For email, use si_mail. Send replies only when the user clearly asks to send; when they ask to change or prepare a reply, use draft_reply. When asked to change a draft, read the thread and the current draft first.
 - Hand coding, testing and deploying to the build agent, and reading or research to the research agent.
 - If something fails, say so plainly.
 
@@ -170,6 +220,7 @@ ${desks}
 Active sandbox: ${activeSandbox()}
 
 Chats in Messages: ${chats.map((c) => c.name).join(', ')}
+Mail needing the user: ${threads.filter((t) => t.bucket === 'needs' && !t.done).map((t) => `${senderOf(t).name} (${t.id}): ${t.summary}`).join('; ') || 'none'}
 Sites the browser knows: ${SITES.map((site) => `${site.name} (${site.url})`).join(', ')}
 Use these exact addresses when the user names one of them.
 Browser page: ${page.host ? `${page.title} (${page.url})` : 'start page'}`
@@ -184,6 +235,49 @@ function run(name: string, args: Record<string, string>, reply: Partial<Reply>):
       const who = chat.group ? chat.name : chat.name.split(' ')[0]
       reply.open = { label: `Open chat with ${who}`, run: () => showChat(chat.id) }
       return { sent: true, to: chat.name }
+    }
+    case 'list_inbox':
+      return threads.map((t) => ({
+        id: t.id,
+        from: senderOf(t).name,
+        subject: t.subject,
+        section: t.bucket,
+        summary: t.summary,
+        draft: t.draft,
+        status: t.done,
+      }))
+    case 'read_email': {
+      const thread = findThread(args.thread)
+      if (!thread) return { error: `No thread matches "${args.thread}".` }
+      return {
+        id: thread.id,
+        subject: thread.subject,
+        draft: thread.draft,
+        messages: thread.mails.map((m) => ({ from: m.from === 'me' ? 'Shkumbin (user)' : m.from.name, text: m.body.join('\n\n') })),
+      }
+    }
+    case 'reply_email':
+    case 'draft_reply': {
+      const thread = findThread(args.thread)
+      if (!thread) return { error: `No thread matches "${args.thread}".` }
+      const id = thread.id
+      if (name === 'reply_email') replyMail(id, args.text, 'si')
+      else setDraft(id, args.text)
+      showMail(id)
+      reply.open = { label: 'Open in Mail', app: 'mail', run: () => showMail(id) }
+      return name === 'reply_email' ? { sent: true } : { drafted: true }
+    }
+    case 'send_email': {
+      const person = findPerson(args.to)
+      const sent = sendMail(person?.email ?? args.to, args.subject, args.text, 'si')
+      reply.open = { label: 'Open in Mail', app: 'mail', run: () => showMail(sent.id) }
+      return { sent: true, to: sent.to.email }
+    }
+    case 'archive_email': {
+      const thread = findThread(args.thread)
+      if (!thread) return { error: `No thread matches "${args.thread}".` }
+      archive(thread.id)
+      return { archived: true }
     }
     case 'open_page':
       browse(toUrl(args.url)).action?.()

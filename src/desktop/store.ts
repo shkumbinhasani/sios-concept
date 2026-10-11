@@ -1,7 +1,7 @@
 import { createMemo, createRoot, createSignal } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
 
-export type WindowId = 'browser' | 'music' | 'messages' | 'notes' | 'canvas' | 'terminal' | 'monitor' | 'simulator'
+export type WindowId = 'browser' | 'music' | 'messages' | 'notes' | 'canvas' | 'terminal' | 'monitor' | 'simulator' | 'mail'
 export type SandboxId = string
 export type SandboxKind = 'local' | 'agent' | 'remote'
 export type SandboxStatus = 'idle' | 'working' | 'waiting'
@@ -102,6 +102,12 @@ function defaultLayout(): Record<WindowId, Rect> {
       w: clamp(sw * 0.62, 760, 1180),
       h: clamp(sh * 0.84, 460, 900),
     },
+    mail: {
+      x: left + (sw - clamp(sw * 0.66, 800, 1240)) / 2 + 24,
+      y: (sh - clamp(sh * 0.86, 480, 920)) / 2,
+      w: clamp(sw * 0.66, 800, 1240),
+      h: clamp(sh * 0.86, 480, 920),
+    },
     music: { x: personalX + browserW - 90, y: (sh - musicH) / 2 + 28, w: musicW, h: musicH },
     canvas: { x: researchX + notesW - 120, y: (sh - canvasH) / 2, w: canvasW, h: canvasH },
     notes: { x: researchX, y: (sh - notesH) / 2 + 36, w: notesW, h: notesH },
@@ -116,6 +122,7 @@ const [windows, setWindows] = createStore<Record<WindowId, WindowState>>({
   browser: place(initial.browser, 1),
   music: place(initial.music, 2),
   messages: { ...place(initial.messages, 7), minimized: true, minimizedAt: 0 },
+  mail: { ...place(initial.mail, 9), minimized: true, minimizedAt: 1 },
   notes: place(initial.notes, 3),
   canvas: place(initial.canvas, 4),
   terminal: place(initial.terminal, 5),
@@ -166,7 +173,7 @@ const [sandboxes, setSandboxes] = createStore<Record<SandboxId, Sandbox>>({
     host: 'This Mac',
     status: 'idle',
     activity: 'Reading and music',
-    windows: ['browser', 'music', 'messages'],
+    windows: ['browser', 'music', 'messages', 'mail'],
   },
   research: {
     id: 'research',

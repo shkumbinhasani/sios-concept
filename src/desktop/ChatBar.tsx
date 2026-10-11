@@ -24,7 +24,7 @@ interface Message {
   text: string
   pending: boolean
   sandbox?: SandboxId
-  open?: { label: string; run: () => void }
+  open?: { label: string; run: () => void; app?: 'mail' }
 }
 
 let ids = 0
@@ -190,10 +190,19 @@ export function ChatBar() {
                         <Show when={message.open}>
                           {(open) => (
                             <button class="msg-chip msg-open" onClick={() => open().run()}>
-                              <span class="msg-open-icon">
-                                <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor">
-                                  <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z" />
-                                </svg>
+                              <span class="msg-open-icon" classList={{ 'is-mail': open().app === 'mail' }}>
+                                <Show
+                                  when={open().app === 'mail'}
+                                  fallback={
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor">
+                                      <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z" />
+                                    </svg>
+                                  }
+                                >
+                                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round">
+                                    <path d="M4 6h16v12H4zM4 7l8 6 8-6" />
+                                  </svg>
+                                </Show>
                               </span>
                               <span class="msg-chip-name">{open().label}</span>
                             </button>

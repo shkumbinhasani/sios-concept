@@ -2,6 +2,7 @@ import { currentPage, openPage, showBrowser } from '../apps/browser/state'
 import { SITES, titleOf, toUrl } from '../apps/browser/sites'
 import { brainstorm } from '../apps/canvas/state'
 import { compose, findChat, openChat, sendFromSI } from '../apps/messages/state'
+import { findPerson, findThread, needsYou, openThread, send as sendMail, senderOf, setDraft as setMailDraft, threads } from '../apps/mail/state'
 import { createSandbox, focusWindow, openWindow, sandboxOf, switchSandbox, type SandboxId } from './store'
 
 export interface Reply {
@@ -9,7 +10,7 @@ export interface Reply {
   sandbox?: SandboxId
   task?: string
   action?: () => void
-  open?: { label: string; run: () => void }
+  open?: { label: string; run: () => void; app?: 'mail' }
 }
 
 export const searchUrl = (query: string) => `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(query)}`
@@ -159,8 +160,81 @@ function messageReply(message: string): Reply | undefined {
   return undefined
 }
 
+const WEEKDAYS = /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi
+
+function sentence(text: string) {
+  const clean = text
+    .trim()
+    .replace(WEEKDAYS, (d) => d[0].toUpperCase() + d.slice(1).toLowerCase())
+    .replace(/^\w/, (c) => c.toUpperCase())
+  const question =
+    /^(can|could|will|would|do|does|are|is|should)\b/i.test(clean) || /\b(can|could|will|would) (we|you|i)\b/i.test(clean)
+  return /[.!?]$/.test(clean) ? clean : `${clean}${question ? '?' : '.'}`
+}
+
+function emailFrom(request: string) {
+  const [topic, ...rest] = request.split(/,\s*|\s+-\s+|:\s*/)
+  const subject = topic.replace(/^(the|my|our)\s+/i, '').replace(/^\w/, (c) => c.toUpperCase())
+  if (!rest.length) return { subject: subject.split(/\s+/).slice(0, 6).join(' '), line: sentence(request) }
+  const ask = rest
+    .join(', ')
+    .replace(/\b(he|she|they)\b/gi, 'you')
+    .replace(/\b(his|her|their)\b/gi, 'your')
+    .replace(/\bit\b/i, topic.trim().replace(/^(my|our)\s+/i, 'the '))
+  return { subject, line: sentence(ask) }
+}
+
+export function showMail(id?: string) {
+  switchSandbox(sandboxOf('mail'))
+  openWindow('mail')
+  focusWindow('mail')
+  if (id) openThread(id)
+}
+
+function mailReply(message: string): Reply | undefined {
+  const text = message.trim()
+  if (/\b(check|show|open|read)\b.*\b(e-?mail|mail|inbox)\b/i.test(text)) {
+    const waiting = threads.filter((t) => t.bucket === 'needs' && !t.done)
+    const who = waiting.map((t) => senderOf(t).name.split(' ')[0])
+    return {
+      text: waiting.length
+        ? `${needsYou()} ${waiting.length === 1 ? 'email needs' : 'emails need'} you: ${who.join(', ')}. I drafted replies where I could and handled the rest.`
+        : 'Your inbox is clear. I handled everything that came in.',
+      action: () => showMail(waiting[0]?.id),
+    }
+  }
+  const change = text.match(/^change my reply to ([\p{L}]+):\s*(.+)$/iu)
+  if (change) {
+    const thread = findThread(change[1])
+    if (!thread) return { text: `I couldn't find an email from “${change[1]}”.` }
+    const name = senderOf(thread).name.split(' ')[0]
+    return {
+      text: `Rewrote your reply to ${name}. It's waiting in Mail for you to send.`,
+      action: () => {
+        setMailDraft(thread.id, `Hi ${name},\n\n${sentence(change[2])}\n\nBest,\nShkumbin`)
+        showMail(thread.id)
+      },
+      open: { label: 'Open in Mail', app: 'mail', run: () => showMail(thread.id) },
+    }
+  }
+  const match = text.match(/^(?:please\s+)?e-?mail\s+([\p{L}.@-]+)\s+(?:about\s+|that\s+|saying\s+)?(.+)$/iu)
+  if (!match) return undefined
+  const person = findPerson(match[1])
+  const name = person?.name.split(' ')[0] ?? match[1]
+  const { subject, line } = emailFrom(match[2])
+  const body = `Hi ${name},\n\n${line}\n\nBest,\nShkumbin`
+  let sentId = ''
+  return {
+    text: `Emailed ${name} about ${subject.toLowerCase()}.`,
+    action: () => {
+      sentId = sendMail(person?.email ?? match[1], subject, body, 'si').id
+    },
+    open: { label: 'Open in Mail', app: 'mail', run: () => showMail(sentId) },
+  }
+}
+
 export function replyTo(message: string): Reply {
-  const command = messageReply(message) ?? browserCommand(message) ?? pageReply(message) ?? canvasReply(message) ?? sandboxReply(message)
+  const command = mailReply(message) ?? messageReply(message) ?? browserCommand(message) ?? pageReply(message) ?? canvasReply(message) ?? sandboxReply(message)
   if (command) return command
   const route = ROUTES.find((r) => r.match.test(message))
   if (route) return route.reply

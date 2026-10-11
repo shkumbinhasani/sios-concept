@@ -3,6 +3,7 @@ import { activeTab, pageTitle, urlOf } from '../apps/browser/state'
 import { faviconOf } from '../apps/browser/sites'
 import { agentCursor, items } from '../apps/canvas/state'
 import { chats, contacts as people, lastIn, ME, totalUnread } from '../apps/messages/state'
+import { needsYou, senderOf, threads } from '../apps/mail/state'
 import { appById, device, openApp as phoneApp } from '../apps/simulator/state'
 import { Artwork, next, playing, progress, setPlaying, track } from '../apps/music/MusicPlayer'
 import { Next, Pause, Play } from '../ui/icons'
@@ -24,6 +25,10 @@ const ICONS: Record<WindowId, { color: string; glyph: JSX.Element }> = {
   messages: {
     color: 'linear-gradient(180deg, #5af08a, #13b34e)',
     glyph: <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z" />,
+  },
+  mail: {
+    color: 'linear-gradient(180deg, #4fb4ff, #0a6cff)',
+    glyph: <path d="M4 6h16v12H4zM4 7l8 6 8-6" />,
   },
   notes: { color: 'linear-gradient(180deg, #c86bff, #6a2bff)', glyph: <path d="M7 4h7l4 4v12H7zM14 4v4h4" /> },
   canvas: { color: 'linear-gradient(180deg, #ffd34d, #ff8a00)', glyph: <path d="M4 4h16v11l-5 5H4z" /> },
@@ -110,6 +115,21 @@ function Content(props: { id: WindowId }) {
             return `${who}: ${last?.text ?? (last?.voice ? 'Voice message' : 'Photo')}`
           })()}
           live={chats.some((c) => c.typing)}
+        />
+      </Match>
+      <Match when={props.id === 'mail'}>
+        <span class="live-badged">
+          <AppIcon id="mail" />
+          <Show when={needsYou() > 0}>
+            <span class="live-count">{needsYou()}</span>
+          </Show>
+        </span>
+        <Text
+          title="Mail"
+          detail={(() => {
+            const next = threads.find((t) => t.bucket === 'needs' && !t.done)
+            return next ? `${senderOf(next).name.split(' ')[0]}: ${next.summary}` : 'All caught up'
+          })()}
         />
       </Match>
       <Match when={props.id === 'terminal'}>

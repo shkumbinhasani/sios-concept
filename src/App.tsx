@@ -2,6 +2,7 @@ import { onCleanup, onMount } from 'solid-js'
 import { Browser } from './apps/browser/Browser'
 import { Canvas } from './apps/canvas/Canvas'
 import { Monitor } from './apps/monitor/Monitor'
+import { Mail } from './apps/mail/Mail'
 import { Messages } from './apps/messages/Messages'
 import { MusicPlayer } from './apps/music/MusicPlayer'
 import { Notes } from './apps/notes/Notes'
@@ -30,6 +31,7 @@ function App() {
       <Browser />
       <MusicPlayer />
       <Messages />
+      <Mail />
       <Canvas />
       <Notes />
       <Terminal />

@@ -9,7 +9,7 @@ export function ChatGPTAccount() {
   onMount(() => {
     loadSession()
     const close = (e: PointerEvent) => {
-      if (!root.contains(e.target as Node)) setMenu(false)
+      if (!root?.contains(e.target as Node)) setMenu(false)
     }
     addEventListener('pointerdown', close)
     onCleanup(() => removeEventListener('pointerdown', close))
