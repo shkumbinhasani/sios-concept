@@ -369,6 +369,7 @@ async function respond(body: { instructions?: string; input: unknown[]; tools?: 
   if (!res.ok || !res.body) throw await apiError(res)
 
   const decoder = new TextDecoder()
+  const items: unknown[] = []
   let buffer = ''
   for await (const chunk of res.body as unknown as AsyncIterable<Uint8Array>) {
     buffer += decoder.decode(chunk, { stream: true })
@@ -384,10 +385,16 @@ async function respond(body: { instructions?: string; input: unknown[]; tools?: 
       if (!data || data === '[DONE]') continue
       const event = JSON.parse(data) as {
         type: string
+        item?: unknown
+        output_index?: number
         response?: { output: unknown[]; error?: { code?: string; message?: string }; incomplete_details?: { reason?: string } }
         error?: { code?: string; message?: string }
       }
-      if (event.type === 'response.completed') return { output: event.response!.output, model }
+      if (event.type === 'response.output_item.done') items[event.output_index ?? items.length] = event.item
+      if (event.type === 'response.completed') {
+        const output = event.response?.output?.length ? event.response.output : items.filter(Boolean)
+        return { output, model }
+      }
       if (event.type === 'response.failed') {
         const error = event.response?.error
         throw { status: 502, code: error?.code, message: error?.message ?? 'The response failed.' } satisfies ApiError

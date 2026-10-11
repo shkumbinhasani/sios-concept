@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js'
 import { currentPage, showBrowser, openPage } from '../apps/browser/state'
-import { toUrl } from '../apps/browser/sites'
+import { SITES, toUrl } from '../apps/browser/sites'
 import { brainstorm } from '../apps/canvas/state'
 import { chats, findChat, sendFromSI } from '../apps/messages/state'
 import { delegate } from './agents'
@@ -170,6 +170,8 @@ ${desks}
 Active sandbox: ${activeSandbox()}
 
 Chats in Messages: ${chats.map((c) => c.name).join(', ')}
+Sites the browser knows: ${SITES.map((site) => `${site.name} (${site.url})`).join(', ')}
+Use these exact addresses when the user names one of them.
 Browser page: ${page.host ? `${page.title} (${page.url})` : 'start page'}`
 }
 
@@ -289,7 +291,7 @@ export async function think(prompt: string): Promise<Reply> {
       for (const item of calls) {
         let result: unknown
         try {
-          result = run(String(item.name).split(".").pop()!, JSON.parse(String(item.arguments || '{}')), reply)
+          result = run(String(item.name).split('.').pop()!, JSON.parse(String(item.arguments || '{}')), reply)
         } catch (e) {
           result = { error: e instanceof Error ? e.message : 'Tool failed.' }
         }
