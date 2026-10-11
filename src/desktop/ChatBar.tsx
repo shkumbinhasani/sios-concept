@@ -3,6 +3,8 @@ import { createStore } from 'solid-js/store'
 import { ArrowUp, Mic, Plus } from '../ui/icons'
 import { ProgressiveBlur } from '../ui/ProgressiveBlur'
 import { delegate } from './agents'
+import { resetConversation, session, think } from './ai'
+import { ChatGPTAccount } from './ChatGPTAccount'
 import { replyTo, type Reply } from './replies'
 import { LiveShelf } from './LiveShelf'
 import { SandboxIcon } from './SandboxIcon'
@@ -115,6 +117,11 @@ export function ChatBar() {
   function respond(prompt: string) {
     const id = ++ids
     slide(() => setMessages(messages.length, { id, role: 'assistant', text: '', pending: true }))
+    if (session().sharing) {
+      const started = Date.now()
+      think(prompt).then((reply) => later(() => fill(id, reply), Math.max(0, ACTION_DELAY - (Date.now() - started))))
+      return
+    }
     const reply = replyTo(prompt)
     later(() => fill(id, reply), reply.action ? ACTION_DELAY : REPLY_DELAY)
   }
@@ -134,6 +141,7 @@ export function ChatBar() {
     if (!messages.length) return
     timers.forEach(clearTimeout)
     timers.clear()
+    resetConversation()
     setClearing(true)
     later(() => {
       setMessages([])
@@ -200,6 +208,7 @@ export function ChatBar() {
           </div>
         </div>
 
+        <ChatGPTAccount />
         <LiveShelf />
         <form
           class="chat-bar"

@@ -12,10 +12,10 @@ export interface Reply {
   open?: { label: string; run: () => void }
 }
 
-const searchUrl = (query: string) => `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(query)}`
+export const searchUrl = (query: string) => `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(query)}`
 const looksLikeAddress = (text: string) => /^https?:\/\//i.test(text) || /^[^\s]+\.[a-z]{2,}(\/\S*)?$/i.test(text)
 
-function browse(url: string, verb = 'Opened'): Reply {
+export function browse(url: string, verb = 'Opened'): Reply {
   return {
     text: `${verb} ${titleOf(url).replace(/ — Search$/, '')} in Browser.`,
     action: () => {
@@ -134,7 +134,7 @@ const MESSAGE_PATTERNS: { kind: 'tell' | 'ask'; re: RegExp }[] = [
   { kind: 'tell', re: new RegExp(String.raw`^(?:please\s+)?(?:tell|text|message|msg|send)\s+${NAME}\s+(?:a message\s+)?(?:that\s+)?(.+)$`, 'iu') },
 ]
 
-function showChat(id: string) {
+export function showChat(id: string) {
   switchSandbox(sandboxOf('messages'))
   openWindow('messages')
   focusWindow('messages')
